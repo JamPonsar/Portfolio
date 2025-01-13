@@ -8,18 +8,25 @@ fetch(`${backendURL}/api/endpoint`)
   })
   .catch(error => console.error('Error:', error));
 
-// Sidebar toggle functionality
-const toggleBtn = document.getElementById('toggle-btn');
+
+  
+const navToggle = document.getElementById('nav-toggle');
 const sidebar = document.getElementById('sidebar');
+const closeBtn = document.getElementById('close-btn');
 
-// Toggle sidebar visibility
-function toggleSidebar() {
-  sidebar.classList.toggle('open');
-}
-
-toggleBtn.addEventListener('click', toggleSidebar);
-
-// Ensure body styling updates with sidebar state
-toggleBtn.addEventListener('click', function() {
-  document.body.classList.toggle('sidebar-open');
+// Toggle Sidebar
+navToggle.addEventListener('click', () => {
+sidebar.classList.toggle('open');
+navToggle.classList.toggle('open');
+navToggle.innerHTML = sidebar.classList.contains('open')
+    ? '<i class="fas fa-times"></i>'
+    : '<i class="fas fa-bars"></i>';
 });
+
+// Close Sidebar
+closeBtn.addEventListener('click', () => {
+sidebar.classList.remove('open');
+navToggle.classList.remove('open');
+navToggle.innerHTML = '<i class="fas fa-bars"></i>';
+});
+  
