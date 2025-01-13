@@ -35,7 +35,7 @@ body {
     padding: 0;
     display: flex;
     justify-content: flex-end;
-    gap: 20px;
+    gap: 10px;
     flex-grow: 1;
   }
   
@@ -73,7 +73,7 @@ body {
   /* Navigation Icons Styling */
   .nav-icons {
     display: flex;
-    gap: 15px;
+    gap: 0px;
   }
   
   .nav-icons a {
@@ -200,7 +200,7 @@ body {
   /* Main Content Styling */
   #main-content {
     padding: 120px 20px 20px 20px;
-    background: linear-gradient(135deg, #d04fe1, #e25bfc);
+    background: linear-gradient(0deg, #e5e5e5, #e25bfc);
     height: 100vh;
     color: #ffffff;
   }
