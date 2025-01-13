@@ -8,25 +8,47 @@ fetch(`${backendURL}/api/endpoint`)
   })
   .catch(error => console.error('Error:', error));
 
-
-  
+// Elements
 const navToggle = document.getElementById('nav-toggle');
 const sidebar = document.getElementById('sidebar');
 const closeBtn = document.getElementById('close-btn');
+const sidebarLinks = document.querySelector('.sidebar-links');
 
 // Toggle Sidebar
 navToggle.addEventListener('click', () => {
-sidebar.classList.toggle('open');
-navToggle.classList.toggle('open');
-navToggle.innerHTML = sidebar.classList.contains('open')
+  sidebar.classList.toggle('open');
+  navToggle.classList.toggle('open');
+  navToggle.innerHTML = sidebar.classList.contains('open')
     ? '<i class="fas fa-times"></i>'
     : '<i class="fas fa-bars"></i>';
+//   sidebarLinks.style.pointerEvents = sidebar.classList.contains('open') ? 'auto' : 'none';
 });
 
 // Close Sidebar
-closeBtn.addEventListener('click', () => {
-sidebar.classList.remove('open');
-navToggle.classList.remove('open');
-navToggle.innerHTML = '<i class="fas fa-bars"></i>';
+if (closeBtn) {
+  closeBtn.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    navToggle.innerHTML = '<i class="fas fa-bars"></i>';
+  });
+}
+
+// Wait for the DOM to load
+window.addEventListener('DOMContentLoaded', () => {
+  const mainText = document.getElementById('main-text');
+
+  // Add the 'visible' class to trigger the animation
+  setTimeout(() => {
+    if (mainText) {
+      mainText.classList.add('visible');
+    }
+  }, 200);
 });
-  
+
+// Add functionality to Contact Button
+const contactButton = document.getElementById('contact-button');
+if (contactButton) {
+  contactButton.addEventListener('click', () => {
+    window.location.href = 'contact.html';
+    contactButton.style.backgroundColor = '#b43bb9';
+  });
+}
