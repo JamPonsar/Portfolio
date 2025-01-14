@@ -1,12 +1,12 @@
-/* General Body Styling */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f4f4f9;
     overflow-x: hidden;
-    box-sizing: border-box; /* Prevent overflow from padding/borders */
+    box-sizing: border-box; /* Prevent padding and borders from exceeding width */
   }
+  
   
   /* Navigation Bar Styling */
   .navbar {
@@ -41,17 +41,38 @@ body {
     flex-grow: 1;
   }
   
+  .nav-links li {
+    margin: 0;
+  }
+  
   .nav-links li a {
     color: #ecf0f1;
     text-decoration: none;
     padding: 10px 15px;
     display: inline-block;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Hover Effect with Line Animation */
+  .nav-links li a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background-color: #d955ea;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: width 0.3s ease-in-out;
   }
   
   .nav-links li a:hover::after {
     width: 80%;
   }
   
+  /* Navigation Icons Styling */
   .nav-icons {
     display: flex;
     gap: 0px;
@@ -60,8 +81,14 @@ body {
   .nav-icons a {
     color: #ecf0f1;
     font-size: 20px;
+    text-decoration: none;
   }
   
+  .nav-icons a:hover {
+    color: #d955ea;
+  }
+  
+  /* Toggle Button Styling */
   .nav-toggle {
     display: none;
     cursor: pointer;
@@ -71,13 +98,19 @@ body {
     top: 20px;
     right: 20px;
     z-index: 1100;
+    transition: transform 0.2s ease-in-out;
+    padding: 0 10px;
   }
   
-  /* Sidebar Styling */
-  .sidebar {
+  .nav-toggle.open i {
+    transform: rotate(180deg);
+  }
+  
+/* Sidebar Styling */
+.sidebar {
     position: fixed;
     top: 0;
-    left: -100vw;
+    left: -100vw; /* Use viewport width to hide completely */
     width: 100vw;
     height: 100vh;
     background-color: #141314;
@@ -96,6 +129,7 @@ body {
     pointer-events: auto;
   }
   
+  /* Sidebar links */
   .sidebar-links {
     list-style: none;
     padding: 0;
@@ -106,12 +140,23 @@ body {
     gap: 20px;
   }
   
+  .sidebar.open .sidebar-links {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .sidebar-links li {
+    width: 100%;
+    text-align: center;
+  }
+  
   .sidebar-links li a {
     color: #ecf0f1;
     text-decoration: none;
     font-size: 30px;
     padding: 20px;
     width: 100%;
+    box-sizing: border-box;
   }
   
   /* Sidebar Icons Styling */
@@ -121,6 +166,13 @@ body {
     justify-content: center;
   }
   
+  .sidebar-icons a {
+    color: #ecf0f1;
+    font-size: 30px;
+    width: 20px;
+  }
+  
+  /* Close Button Styling */
   .close-btn {
     position: absolute;
     top: 20px;
@@ -132,7 +184,18 @@ body {
     cursor: pointer;
   }
   
-  /* Main Content Styling */
+  /* Responsive Navigation */
+  @media (max-width: 768px) {
+    .nav-links {
+      display: none;
+    }
+  
+    .nav-toggle {
+      display: block;
+    }
+  }
+  
+ /* Main Content Styling */
   #main-content {
     display: flex;
     flex-wrap: wrap;
@@ -149,7 +212,7 @@ body {
     justify-content: center;
     align-items: center;
     padding: 40px;
-    box-sizing: border-box;
+    box-sizing: border-box; /* Ensures padding is included in the width */
     width: 100%;
   }
   
@@ -165,26 +228,49 @@ body {
     width: 100%;
   }
   
-  /* Footer Styling */
-  #footer {
-    background-color: #000000;
-    color: #ffffff;
-    text-align: center;
-    padding: 15px 0;
-    font-size: 16px;
-    width: 100%;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
-    box-sizing: border-box;
-  }
+  /* Responsive Layout for Small Screens */
+  @media (max-width: 768px) {
+    #main-content {
+      flex-direction: column;
+    }
   
-  #footer p {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    letter-spacing: 1px;
-    word-spacing: 10px;
-  }
+    #text-section {
+      width: 100%;
+      height: 70vh; /* Increase height */
+      justify-content: flex-start; /* Keep text at the top */
+      margin-top: 50px;
+      padding-top: 90px;
+      padding-left: 20px;
+      padding-right: 20px;
+      justify-content: space-between;
+    }
   
-  /* Main Text Styling */
+    #image-section {
+      width: 100%;
+      height: auto;
+      padding: 20px;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+  
+    #contact-button {
+      margin-top: auto; /* Push the button to the bottom */
+      margin-bottom: 20px; /* Add spacing from the bottom */
+    }
+
+    #footer {
+        width: 100%;
+        padding-left: 20px;
+        padding-right: 20px;
+        
+      }
+    
+    #sidebar {
+        width: 100%;
+        height: 100vh;;
+    }
+  }
+
   #main-text h1 {
     font-size: 48px;
     margin: 0;
@@ -195,20 +281,21 @@ body {
     margin: 10px 0;
   }
   
-  /* Image Styling */
   #main-image {
     max-width: 70%;
     max-height: 80%;
-    border-radius: 60px;
-    border: 4px solid #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 60px; /* Matches the rounded corners of the image */
+    border: 4px solid #ffffff; /* White border */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Optional shadow for a polished look */
     margin-top: 30px;
   }
   
+  
+  
   /* Contact Button Styling */
   #contact-button {
-    align-self: center;
-    margin-bottom: 40px;
+    align-self: center; /* Center the button horizontally */
+    margin-bottom: 40px; /* Add spacing from the bottom */
     display: inline-block;
     background-color: #141314;
     color: #ffffff;
@@ -218,6 +305,7 @@ body {
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 20px;
   }
   
   #contact-button:hover {
@@ -225,35 +313,32 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
-  
-  /* Responsive Layout for Small Screens */
+
+/* Responsive Layout for Small Screens
 @media (max-width: 768px) {
-    #main-content {
-      flex-direction: column;
-    }
-  
-    #text-section,
-    #image-section,
-    #footer {
-      width: 100%;
-      padding-left: 20px;
-      padding-right: 20px;
-    }
-  
-    #text-section {
-      margin-top: 50px; /* Increase spacing above */
-      padding-top: 80px; /* Add padding inside */
-      padding-bottom: 60px;
-    }
-  
-    #image-section {
-      padding: 20px;
-    }
-  
-    #contact-button {
-      margin-top: auto;
-      margin-bottom: 20px;
-    }
+  #text-section {
+    width: 100%;
+    height: 60vh;
+    justify-content: space-between;
   }
+} */
   
+
+/* Footer Styling */
+#footer {
+    background-color: #000000;
+    color: #ffffff;
+    text-align: center;
+    padding: 15px 0;
+    font-size: 16px;
+    width: 100%;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box; /* Ensure consistent width */
+  }
+
+#footer p {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
   
