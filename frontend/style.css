@@ -210,7 +210,7 @@ body {
   /* Text Section Styling */
   #text-section {
     flex: 1;
-    background: linear-gradient(45deg, #7113dc, #8e6adc, #7113dc);
+    background: linear-gradient(45deg, #7113dc, #785db1, #7113dc);
     color: #ffffff;
     display: flex;
     flex-direction: column;
@@ -360,18 +360,16 @@ body {
 
 /* Contact Page */
 
-/* Contact Page Styling */
+/* Main Contact Page Styling */
 #contact-container {
     display: flex;
     flex-wrap: wrap;
-    min-height: 100vh;
-    background: linear-gradient(45deg, #7113dc, #8e6adc, #7113dc);
+    min-height: 100%;
+    background: linear-gradient(70deg, #7113dc, #785db1, #7113dc);
     color: #ffffff;
     padding: 100px 20px 20px;
-    box-sizing: border-box;
 }
 
-/* Left Text Section */
 #contact-text {
     flex: 1;
     padding: 40px;
@@ -383,14 +381,12 @@ body {
     margin-bottom: 20px;
 }
 
-/* Right Form Section */
 #contact-form {
     flex: 1;
-    color: #ffffff;
     padding: 40px;
     border-radius: 12px;
-    box-sizing: border-box;
-    font-weight: bold;
+    /* background-color: #ffffff; */
+    color: #ffffff;
 }
 
 #contact-form form {
@@ -398,69 +394,37 @@ body {
     flex-direction: column;
 }
 
-/* First and Last Name in the Same Row */
 .form-row {
     display: flex;
     gap: 40px;
-    width: calc(100% - 30px);
-    
-    /* width: 100%; */
-    /* Ensure it takes the full width */
-    /* max-width: 600px; */
-    /* justify-content: space-between; */
+    width: 100%;
 }
 
 .form-group {
     flex: 1;
 }
 
-.form-group label {
+#contact-form label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    font-weight: bold;
 }
 
-/* Styling for input fields */
-.form-group input {
+#contact-form input,
+#contact-form textarea {
     width: 100%;
     padding: 14px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 16px;
-    background-color: #ffffff;
-    color: #000000;
-}
-
-/* Styling for form labels */
-#contact-form label {
-    display: block;
-    margin-bottom: 10px; /* Uniform spacing between label and input */
-    font-weight: bold;
-}
-
-/* Ensure all input fields are aligned */
-#contact-form input,
-#contact-form textarea {
     margin-bottom: 20px;
-    padding: 14px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 16px;
-    background-color: #ffffff;
-    color: #000000;
-
 }
-
-/* Ensure form-row input fields have the same alignment */
-.form-row .form-group input {
-    margin-bottom: 10px;
-  }
 
 #contact-form textarea {
     height: 120px;
     resize: none;
 }
 
-/* Send Button Styling */
 #send-button {
     width: 40%;
     align-self: center;
@@ -471,96 +435,72 @@ body {
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    /* text-transform: uppercase; */
 }
 
 #send-button:hover {
     background-color: #9e76f4;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* Responsive Layout for Small Screens */
+/* Contact Details Styling */
+#contact-details {
+    margin-top: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    color: #ffffff;
+    width: calc(50% - 20px);
+}
+
+.contact-item i {
+    color: #d955ea;
+}
+
+.contact-item a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.contact-item a:hover {
+    color: #d955ea;
+}
+
+/* Responsive Styling for Small Screens */
 @media (max-width: 768px) {
     #contact-container {
         flex-direction: column;
-        padding: 80px 20px 20px; 
-    }
-
-    .form-row {
-        flex-direction: column;
-        gap: 0px;
-        width: 100%;
-    }
-
-    #contact-form input,
-    #contact-form textarea {
-        width: 90%;
+        padding: 80px 20px;
     }
 
     #contact-text {
         text-align: center;
     }
 
-    #contact-form {
-        width: 100%;
+    #contact-form input,
+    #contact-form textarea {
+        width: 95%;
     }
-
-
 
     #contact-details {
-        gap: 20px;
-    }
-
-    .contact-row {
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
+        justify-content: center;
+        gap: 10px;
     }
 
     .contact-item {
+        width: 100%;
         justify-content: center;
-        font-size: 16px;
     }
 
-    .contact-item i {
-        margin-right: 8px;
+    .form-row {
+        flex-direction: column;
+        gap: 0px;
     }
 }
-
-/* Contact Details Styling */
-#contact-details {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  /* Row Styling */
-  .contact-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 40px;
-  }
-  
-  .contact-item {
-    display: flex;
-    align-items: center;
-    font-size: 18px;
-    color: #ffffff;
-  }
-  
-  .contact-item i {
-    margin-right: 10px;
-    color: #d955ea;
-  }
-  
-  .contact-item a {
-    color: #ffffff;
-    text-decoration: none;
-    transition: color 0.3s;
-  }
-  
-  .contact-item a:hover {
-    color: #d955ea;
-  }
-  
