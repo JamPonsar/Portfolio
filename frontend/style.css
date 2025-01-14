@@ -501,6 +501,6 @@ body {
 
     .form-row {
         flex-direction: column;
-        gap: 0px;
+        gap: 10px;
     }
 }
