@@ -402,7 +402,8 @@ body {
 .form-row {
     display: flex;
     gap: 40px;
-    width: calc(100% - 25px);
+    width: calc(100% - 30px);
+    
     /* width: 100%; */
     /* Ensure it takes the full width */
     /* max-width: 600px; */
@@ -446,6 +447,7 @@ body {
     font-size: 16px;
     background-color: #ffffff;
     color: #000000;
+
 }
 
 /* Ensure form-row input fields have the same alignment */
@@ -481,6 +483,7 @@ body {
 @media (max-width: 768px) {
     #contact-container {
         flex-direction: column;
+        padding: 80px 20px 20px; 
     }
 
     .form-row {
@@ -491,7 +494,7 @@ body {
 
     #contact-form input,
     #contact-form textarea {
-        width: 100%;
+        width: 90%;
     }
 
     #contact-text {
