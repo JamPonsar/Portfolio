@@ -478,20 +478,15 @@ body {
     #contact-container {
         flex-direction: column;
         padding: 80px 20px;
-        align-items: center;
     }
 
     #contact-text {
         text-align: center;
     }
 
-    #contact-form {
-        width: 80%;
-    }
-
     #contact-form input,
     #contact-form textarea {
-        width: 90%;
+        width: 92%;
     }
 
     #contact-details {
