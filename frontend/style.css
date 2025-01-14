@@ -4,7 +4,9 @@ body {
     padding: 0;
     background-color: #f4f4f9;
     overflow-x: hidden;
+    box-sizing: border-box; /* Prevent padding and borders from exceeding width */
   }
+  
   
   /* Navigation Bar Styling */
   .navbar {
@@ -105,12 +107,12 @@ body {
   }
   
 /* Sidebar Styling */
-  .sidebar {
+.sidebar {
     position: fixed;
     top: 0;
-    left: -100%; /* Hide off-screen initially */
-    width: 100%; /* Fill entire screen width */
-    height: 100vh; /* Fill entire screen height */
+    left: -100vw; /* Use viewport width to hide completely */
+    width: 100vw;
+    height: 100vh;
     background-color: #141314;
     color: #ecf0f1;
     display: flex;
@@ -119,10 +121,9 @@ body {
     align-items: center;
     z-index: 2000;
     transition: left 0.4s ease-in-out;
-    pointer-events: none; /* Disable interaction when closed */
+    pointer-events: none;
   }
   
-  /* When the sidebar is open, bring it into view */
   .sidebar.open {
     left: 0;
     pointer-events: auto;
@@ -224,7 +225,11 @@ body {
     align-items: center;
     justify-content: center;
     padding: 10px;
+    width: 100%; /* Ensure it takes the full width */
+    box-sizing: border-box; /* Prevent overflow */
+    overflow: hidden; /* Hide any extra content that overflows */
   }
+  
   
   /* Responsive Layout for Small Screens */
   @media (max-width: 768px) {
