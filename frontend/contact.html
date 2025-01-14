@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home Page</title>
+  <title>Contact Me</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -56,13 +56,79 @@
       </li>
     </ul>
   </div>
-  
-  <div id="main-content">
-    <header>
-      <h1>Contact Me</h1>
-      <p>Email: <a href="mailto:jamyang.ponsar@example.com">jamyang.ponsar@example.com</a></p>
-    </header>
+
+  <!-- Main Content -->
+  <div id="contact-container">
+    <!-- Left Text Section -->
+    <div id="contact-text">
+      <h1  style="font-family: 'Anton', sans-serif; font-weight: 800;">Contact Me</h1>
+      <p>Thank you for visiting my portfolio and for your interest in connecting!
+        I am always open to and actively looking for new opportunities, collaborations, and meaningful conversations.
+        Whether you have a project in mind, feedback to share, or simply want to connect, I would love to hear from you.<br><br>
+        If you want to contact, you can fill out the form, and I will get back to you as soon as possible.
+        Alternatively, feel free to reach out directly via email, phone or linkedin using the contact information provided below.
+        Let's build something great together!
+      </p>
+
+      <!-- Contact Details Row -->
+      <div id="contact-details">
+        <!-- Top Row: Email and Phone -->
+        <div class="contact-row">
+          <div class="contact-item">
+            <i class="fas fa-envelope"></i>
+            <a href="mailto:jamyangponsar@gmail.com">jamyangponsar@gmail.com</a>
+          </div>
+          <div class="contact-item">
+            <i class="fas fa-phone-alt"></i>
+            <a>+1 (516) 754-5745</a>
+          </div>
+        </div>
+
+        <!-- Bottom Row: LinkedIn and GitHub -->
+        <div class="contact-row">
+          <div class="contact-item">
+            <i class="fab fa-linkedin"></i>
+            <a href="https://linkedin.com/in/jamyang-ponsar-046257246" target="_blank">Jamyang Ponsar</a>
+          </div>
+          <div class="contact-item">
+            <i class="fab fa-github"></i>
+            <a href="https://github.com/JamPonsar" target="_blank">JamPonsar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Right Form Section -->
+    <div id="contact-form">
+      <form>
+        <!-- First and Last Name in the Same Row -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="first-name">First Name (required)</label>
+            <input type="text" id="first-name" required>
+          </div>
+
+          <div class="form-group">
+            <label for="last-name">Last Name (required)</label>
+            <input type="text" id="last-name" required> 
+          </div>
+        </div>
+
+        <label for="email">Your Email Address (required)</label>
+        <input type="email" id="email" required>
+
+        <label for="subject">Subject</label>
+        <input type="text" id="subject" required>
+
+        <label for="message">Message (required)</label>
+        <textarea id="message" required></textarea>
+
+        <button type="submit" id="send-button">Send Email</button>
+      </form>
+    </div>
   </div>
+
   <script src="script.js"></script>
 </body>
 </html>

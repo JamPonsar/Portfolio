@@ -195,6 +195,11 @@ body {
     }
   }
   
+
+
+/* Home Page */
+
+
  /* Main Content Styling */
   #main-content {
     display: flex;
@@ -205,7 +210,7 @@ body {
   /* Text Section Styling */
   #text-section {
     flex: 1;
-    background: linear-gradient(45deg, #7113dc, #9e76f4, #7113dc);
+    background: linear-gradient(45deg, #7113dc, #8e6adc, #7113dc);
     color: #ffffff;
     display: flex;
     flex-direction: column;
@@ -341,4 +346,218 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+  
+
+
+
+
+
+
+
+
+
+
+
+/* Contact Page */
+
+/* Contact Page Styling */
+#contact-container {
+    display: flex;
+    flex-wrap: wrap;
+    min-height: 100vh;
+    background: linear-gradient(45deg, #7113dc, #8e6adc, #7113dc);
+    color: #ffffff;
+    padding: 100px 20px 20px;
+    box-sizing: border-box;
+}
+
+/* Left Text Section */
+#contact-text {
+    flex: 1;
+    padding: 40px;
+    font-size: 18px;
+}
+
+#contact-text h1 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+/* Right Form Section */
+#contact-form {
+    flex: 1;
+    color: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-sizing: border-box;
+    font-weight: bold;
+}
+
+#contact-form form {
+    display: flex;
+    flex-direction: column;
+}
+
+/* First and Last Name in the Same Row */
+.form-row {
+    display: flex;
+    gap: 40px;
+    width: calc(100% - 25px);
+    /* width: 100%; */
+    /* Ensure it takes the full width */
+    /* max-width: 600px; */
+    /* justify-content: space-between; */
+}
+
+.form-group {
+    flex: 1;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* Styling for input fields */
+.form-group input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    background-color: #ffffff;
+    color: #000000;
+}
+
+/* Styling for form labels */
+#contact-form label {
+    display: block;
+    margin-bottom: 10px; /* Uniform spacing between label and input */
+    font-weight: bold;
+}
+
+/* Ensure all input fields are aligned */
+#contact-form input,
+#contact-form textarea {
+    margin-bottom: 20px;
+    padding: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    background-color: #ffffff;
+    color: #000000;
+}
+
+/* Ensure form-row input fields have the same alignment */
+.form-row .form-group input {
+    margin-bottom: 10px;
+  }
+
+#contact-form textarea {
+    height: 120px;
+    resize: none;
+}
+
+/* Send Button Styling */
+#send-button {
+    width: 40%;
+    align-self: center;
+    background-color: #141314;
+    color: #ffffff;
+    padding: 12px;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    /* text-transform: uppercase; */
+}
+
+#send-button:hover {
+    background-color: #9e76f4;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Layout for Small Screens */
+@media (max-width: 768px) {
+    #contact-container {
+        flex-direction: column;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0px;
+        width: 100%;
+    }
+
+    #contact-form input,
+    #contact-form textarea {
+        width: 100%;
+    }
+
+    #contact-text {
+        text-align: center;
+    }
+
+    #contact-form {
+        width: 100%;
+    }
+
+
+
+    #contact-details {
+        gap: 20px;
+    }
+
+    .contact-row {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .contact-item {
+        justify-content: center;
+        font-size: 16px;
+    }
+
+    .contact-item i {
+        margin-right: 8px;
+    }
+}
+
+/* Contact Details Styling */
+#contact-details {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  /* Row Styling */
+  .contact-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+  }
+  
+  .contact-item {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    color: #ffffff;
+  }
+  
+  .contact-item i {
+    margin-right: 10px;
+    color: #d955ea;
+  }
+  
+  .contact-item a {
+    color: #ffffff;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  
+  .contact-item a:hover {
+    color: #d955ea;
+  }
   
