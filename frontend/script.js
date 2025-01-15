@@ -1,16 +1,5 @@
 const backendURL = 'https://portfolio-backend-gold-chi.vercel.app';
 
-// Fetching data from the backend
-fetch(`${backendURL}/api/endpoint`)
-  .then(response => response.json())
-  .then(data => {
-    console.log('Data from backend:', data);
-  })
-  .catch(error => console.error('Error:', error));
-
-
-
-
 // Elements
 const navToggle = document.getElementById('nav-toggle');
 const sidebar = document.getElementById('sidebar');
@@ -80,14 +69,16 @@ form.addEventListener('submit', async (event) => {
       body: JSON.stringify(formData),
     });
 
-    if (response.ok) {
-      alert('Email sent successfully!');
-      form.reset(); // Clear the form
-    } else {
-      alert('Failed to send email. Please try again.');
+    if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error response:', errorData);
+        alert('Failed to send email. Please try again.');
+      } else {
+        alert('Email sent successfully!');
+        form.reset();
+      }
+    } catch (error) {
+      console.error('Error sending email:', error.message);
+      alert('An error occurred. Please try again later.');
     }
-  } catch (error) {
-    console.error('Error sending email:', error);
-    alert('An error occurred. Please try again later.');
-  }
 });
