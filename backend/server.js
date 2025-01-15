@@ -15,21 +15,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Enable CORS for your frontend domain
-app.use(cors({
-  origin: 'https://jamyangponsar.vercel.app',
-}));
-app.options('*', cors()); // Allow preflight requests for all routes
+const corsOptions = {
+    origin: 'https://jamyangponsar.vercel.app', // Replace with your frontend URL
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  };
+  
+  app.use(cors(corsOptions));
+  app.options('*', cors(corsOptions)); // Preflight request handling
+  
 
 // Serve static files from the frontend
 app.use(express.static(path.join(__dirname, '../frontend')));
-
-// // Example API endpoint
-// app.get('/api/endpoint', (req, res) => {
-//   res.json({ message: 'Hello from the backend!' });
-// });
-
-
 
 // Nodemailer setup
 const transporter = nodemailer.createTransport({
@@ -39,30 +36,6 @@ const transporter = nodemailer.createTransport({
       pass: process.env.EMAIL_PASS,  // Your Gmail App Password
     },
   });
-  
-//   // API endpoint to send email
-//   app.post('/send-email', (req, res) => {
-//     const { firstName, lastName, email, subject, message } = req.body;
-  
-//     const mailOptions = {
-//       from: email,
-//       to: process.env.EMAIL_USER,
-//       subject: `New Contact Form Submission: ${subject}`,
-//       text: `You have a new message from:
-//             Name: ${firstName} ${lastName}
-//             Email: ${email}
-//             Message: ${message}`,
-//     };
-  
-//     transporter.sendMail(mailOptions, (error, info) => {
-//       if (error) {
-//         console.error(error);
-//         return res.status(500).json({ message: 'Failed to send email' });
-//       }
-//       res.status(200).json({ message: 'Email sent successfully!' });
-//     });
-//   });
-
 
 // Email Sending Endpoint
 app.post('/send-email', async (req, res) => {
@@ -71,7 +44,7 @@ app.post('/send-email', async (req, res) => {
     // Define email options
     const mailOptions = {
       from: `"${firstName} ${lastName}" <${email}>`, // Sender's email
-      to: process.env.GMAIL_USER, // Your Gmail
+      to: process.env.MAIL_USER, // Your Gmail
       subject: subject,
       text: message,
     };
