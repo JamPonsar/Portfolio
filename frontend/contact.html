@@ -81,7 +81,7 @@
         <!-- Phone -->
         <div class="contact-item">
           <i class="fas fa-phone-alt"></i>
-          <a href="tel:+15167545745">+1 (516) 754-5745</a>
+          <a>+1 (516) 754-5745</a>
         </div>
 
         <!-- LinkedIn -->
@@ -101,33 +101,26 @@
 
 
     <!-- Right Form Section -->
-    <div id="contact-form">
-      <form>
-        <!-- First and Last Name in the Same Row -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="first-name">First Name (required)</label>
-            <input type="text" id="first-name" required>
-          </div>
-
-          <div class="form-group">
-            <label for="last-name">Last Name (required)</label>
-            <input type="text" id="last-name" required> 
-          </div>
+    <form id="contact-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="first-name">First Name (required)</label>
+          <input type="text" id="first-name" name="firstName" required>
         </div>
-
-        <label for="email">Your Email Address (required)</label>
-        <input type="email" id="email" required>
-
-        <label for="subject">Subject</label>
-        <input type="text" id="subject">
-
-        <label for="message">Message (required)</label>
-        <textarea id="message" required></textarea>
-
-        <button type="submit" id="send-button">Send Email</button>
-      </form>
-    </div>
+        <div class="form-group">
+          <label for="last-name">Last Name (required)</label>
+          <input type="text" id="last-name" name="lastName" required>
+        </div>
+      </div>
+      <label for="email">Your Email Address (required)</label>
+      <input type="email" id="email" name="email" required>
+      <label for="subject">Subject</label>
+      <input type="text" id="subject" name="subject">
+      <label for="message">Message (required)</label>
+      <textarea id="message" name="message" required></textarea>
+      <button type="submit" id="send-button">Send Email</button>
+    </form>
+    
   </div>
 
   <script src="script.js"></script>

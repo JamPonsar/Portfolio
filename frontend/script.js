@@ -8,6 +8,9 @@ fetch(`${backendURL}/api/endpoint`)
   })
   .catch(error => console.error('Error:', error));
 
+
+
+
 // Elements
 const navToggle = document.getElementById('nav-toggle');
 const sidebar = document.getElementById('sidebar');
@@ -52,3 +55,39 @@ if (contactButton) {
     contactButton.style.backgroundColor = '#b43bb9';
   });
 }
+
+
+
+// Handle form submission
+const form = document.querySelector('form');
+form.addEventListener('submit', async (event) => {
+  event.preventDefault(); // Prevent page reload
+  
+  // Collect form data
+  const formData = {
+    firstName: document.getElementById('first-name').value,
+    lastName: document.getElementById('last-name').value,
+    email: document.getElementById('email').value,
+    subject: document.getElementById('subject').value || 'No Subject',
+    message: document.getElementById('message').value,
+  };
+
+  // Send data to backend
+  try {
+    const response = await fetch(`${backendURL}/send-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
+
+    if (response.ok) {
+      alert('Email sent successfully!');
+      form.reset(); // Clear the form
+    } else {
+      alert('Failed to send email. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error sending email:', error);
+    alert('An error occurred. Please try again later.');
+  }
+});
