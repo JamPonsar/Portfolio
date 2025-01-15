@@ -17,8 +17,9 @@ app.use(bodyParser.json());
 
 // Enable CORS for your frontend domain
 app.use(cors({
-  origin: 'https://jamyangponsar.vercel.app'
+  origin: 'https://jamyangponsar.vercel.app',
 }));
+app.options('*', cors()); // Allow preflight requests for all routes
 
 // Serve static files from the frontend
 app.use(express.static(path.join(__dirname, '../frontend')));
