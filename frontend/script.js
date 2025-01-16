@@ -1,4 +1,4 @@
-const backendURL = 'https://jamyangponsarbackend.vercel.app/api';
+const backendURL = 'https://jamyangponsarbackend.vercel.app';
 
 // Elements
 const navToggle = document.getElementById('nav-toggle');
