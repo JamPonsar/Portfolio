@@ -49,9 +49,14 @@ if (contactButton) {
 
 // Handle form submission
 const form = document.querySelector('form');
+const spinner = document.getElementById('loading-spinner');
+
 form.addEventListener('submit', async (event) => {
   event.preventDefault(); // Prevent page reload
   
+  // Show the spinner
+  spinner.classList.remove('hidden');
+
   // Collect form data
   const formData = {
     firstName: document.getElementById('first-name').value,
@@ -80,6 +85,9 @@ form.addEventListener('submit', async (event) => {
   } catch (err) {
     console.error('Error:', err);
     alert('An error occurred.');
+  } finally {
+    // Hide the spinner
+    spinner.classList.add('hidden');
   }
   
 });
