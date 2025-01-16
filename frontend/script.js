@@ -68,17 +68,21 @@ form.addEventListener('submit', async (event) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData),
     });
-
+  
+    console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
+  
     if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Error response:', errorData);
-        alert('Failed to send email. Please try again.');
-      } else {
-        alert('Email sent successfully!');
-        form.reset();
-      }
-    } catch (error) {
-      console.error('Error sending email:', error.message);
-      alert('An error occurred. Please try again later.');
+      const errorData = await response.json();
+      console.error('Error response:', errorData);
+      alert('Failed to send email. Please try again.');
+    } else {
+      alert('Email sent successfully!');
+      form.reset();
     }
+  } catch (error) {
+    console.error('Error sending email:', error.message);
+    alert('An error occurred. Please try again later.');
+  }
+  
 });

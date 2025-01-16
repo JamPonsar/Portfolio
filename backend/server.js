@@ -39,24 +39,27 @@ const transporter = nodemailer.createTransport({
 
 // Email Sending Endpoint
 app.post('/send-email', async (req, res) => {
+    console.log('Received email request:', req.body); // Debug log
+  
     const { firstName, lastName, email, subject, message } = req.body;
   
-    // Define email options
     const mailOptions = {
-      from: `"${firstName} ${lastName}" <${email}>`, // Sender's email
-      to: process.env.MAIL_USER, // Your Gmail
+      from: `"${firstName} ${lastName}" <${email}>`,
+      to: process.env.EMAIL_USER,
       subject: subject,
       text: message,
     };
   
     try {
       await transporter.sendMail(mailOptions);
+      console.log('Email sent successfully'); // Debug log
       res.status(200).send({ message: 'Email sent successfully!' });
     } catch (error) {
-      console.error('Error sending email:', error);
+      console.error('Error sending email:', error); // Debug log
       res.status(500).send({ message: 'Failed to send email.' });
     }
   });
+  
   
 
 
