@@ -1,4 +1,4 @@
-const backendURL = 'https://jamyangponsarbackend.vercel.app';
+const backendURL = 'https://jamyangponsarbackend.vercel.app/api';
 
 // Elements
 const navToggle = document.getElementById('nav-toggle');
@@ -63,26 +63,23 @@ form.addEventListener('submit', async (event) => {
 
   // Send data to backend
   try {
-    const response = await fetch(`${backendURL}/send-email`, {
+    const response = await fetch(`${backendURL}/api/send-email`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData),
     });
-  
-    console.log('Response status:', response.status);
-    console.log('Response headers:', response.headers);
-  
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Error response:', errorData);
-      alert('Failed to send email. Please try again.');
-    } else {
+
+    if (response.ok) {
       alert('Email sent successfully!');
       form.reset();
+    } else {
+      const error = await response.json();
+      console.error('Error:', error);
+      alert('Failed to send email.');
     }
-  } catch (error) {
-    console.error('Error sending email:', error.message);
-    alert('An error occurred. Please try again later.');
+  } catch (err) {
+    console.error('Error:', err);
+    alert('An error occurred.');
   }
   
 });
