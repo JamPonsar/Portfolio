@@ -426,20 +426,24 @@ body {
 }
 
 #send-button {
-    width: 40%;
-    align-self: center;
+    display: block; /* Ensure it's treated as a block element */
+    margin: 0 auto; /* Center horizontally */
     background-color: #141314;
     color: #ffffff;
-    padding: 12px;
+    padding: 12px 24px;
     font-size: 18px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
-}
-
-#send-button:hover {
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  #send-button:hover {
     background-color: #9e76f4;
-}
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  
 
 /* Contact Details Styling */
 #contact-details {
@@ -502,9 +506,5 @@ body {
     .form-row {
         flex-direction: column;
         gap: 10px;
-    }
-
-    #send-button {
-        align-self: center;
     }
 }
