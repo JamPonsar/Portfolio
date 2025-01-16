@@ -503,4 +503,8 @@ body {
         flex-direction: column;
         gap: 10px;
     }
+
+    #send-button {
+        align-self: center;
+    }
 }
