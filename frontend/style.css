@@ -295,8 +295,7 @@ body {
     margin-top: 30px;
   }
   
-  
-  
+
   /* Contact Button Styling */
   #contact-button {
     align-self: center; /* Center the button horizontally */
@@ -364,6 +363,9 @@ body {
 #contact-container {
     display: flex;
     flex-wrap: wrap;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     min-height: calc(100vh - 100px);
     /* background: linear-gradient(70deg, #7113dc, #785db1, #7113dc); */
     color: #ffffff;
@@ -374,6 +376,7 @@ body {
     flex: 1;
     padding: 40px;
     font-size: 18px;
+    max-width: 1200px;
 }
 
 #contact-text h1 {
@@ -453,10 +456,12 @@ body {
     gap: 20px;
     justify-content: space-between;
     align-items: center;
+    justify-content: center;
 }
 
 .contact-item {
     display: flex;
+    justify-content: center;
     align-items: center;
     gap: 10px;
     font-size: 18px;
