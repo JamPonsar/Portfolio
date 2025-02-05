@@ -91,3 +91,29 @@ form.addEventListener('submit', async (event) => {
   }
   
 });
+
+
+
+// Swtich tabs in the about me page
+function showTab(tabId) {
+  // Hide all tabs
+  document.querySelectorAll(".tab-content").forEach((tab) => {
+    tab.classList.remove("active");
+  });
+
+  // Remove active class from all buttons
+  document.querySelectorAll(".tab-button").forEach((btn) => {
+    btn.classList.remove("active");
+  });
+
+  // Show the selected tab
+  document.getElementById(tabId).classList.add("active");
+
+  // Highlight the clicked button
+  event.currentTarget.classList.add("active");
+}
+
+// Show "Languages" tab by default
+document.addEventListener("DOMContentLoaded", () => {
+  showTab("languages");
+});

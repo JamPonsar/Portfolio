@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home Page</title>
+  <title>About Me</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -18,7 +18,7 @@
       </div>
       <ul class="nav-links" id="nav-links">
         <li><a href="index.html">Home</a></li>
-        <li><a href="about.html">About</a></li>
+        <li><a href="about.html" class="active">About</a></li>
         <li><a href="work.html">Work Experience</a></li>
         <li><a href="projects.html">Projects</a></li>
         <li><a href="contact.html">Contact</a></li>
@@ -37,50 +37,125 @@
     </nav>
   </header>
 
-  <!-- Sidebar Navigation Menu -->
-  <div class="sidebar" id="sidebar">
-    <button class="close-btn" id="close-btn"><i class="fas fa-times"></i></button>
-    <ul class="sidebar-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="about.html">About</a></li>
-      <li><a href="work.html">Work Experience</a></li>
-      <li><a href="projects.html">Projects</a></li>
-      <li><a href="contact.html">Contact</a></li>
-      <li class="sidebar-icons">
-        <a href="https://linkedin.com/in/jamyangponsar" target="_blank" aria-label="LinkedIn">
-          <i class="fab fa-linkedin"></i>
-        </a>
-        <a href="https://github.com/JamPonsar" target="_blank" aria-label="GitHub">
-          <i class="fab fa-github"></i>
-        </a>
-      </li>
-    </ul>
-  </div>
-
-  <div id="main-content">
-    <header>
-      <h1>About Me</h1>
-      <p>I recently earned my Bachelor of Science in Computer Science from Stony Brook University this December.
-        Through my academic and personal projects, I’ve gained practical experience in developing full-stack applications using technologies like ReactJS, Node.js, Express, MongoDB, Material UI, and more.
-        Alongside actively applying to new potential job opportunities and completing Leetcode questions, I am working on personal projects to enhance my skills while exploring and applying new technologies.
-        These projects are designed to address real-world challenges, allowing me to gain hands-on experience and create practical, impactful solutions. <br><br>
-
-        This past summer, I had the opportunity to work as a BMS Programmer and QA Developer Intern at Controls NYC.
-        I gained invaluable insight into the building management systems industry.
-        This experience not only deepened my understanding of the industry but also allowed me to apply my Computer Science skills in real-world scenarios.
-        I was able to work on designing and testing software solutions, which helped me bridge the gap between theoretical knowledge and practical implementation.
-        This role reinforced my problem-solving abilities and enhanced my technical expertise in areas such as software development, system integration, and quality assurance.<br><br>
+  <main id="main-content">
+    <div class="content-wrapper">
+      <!-- Left Column: About Me Text -->
+      <section class="about-text">
+        <h1>About Me</h1>
+        <p>I recently earned my Bachelor of Science in Computer Science from Stony Brook University this December.
+          Through my academic and personal projects, I’ve gained practical experience in developing full-stack applications using technologies like ReactJS, Node.js, Express, MongoDB, Material UI, and more.
+          Alongside actively applying to new potential job opportunities and completing Leetcode questions, I am working on personal projects to enhance my skills while exploring and applying new technologies.
+          These projects are designed to address real-world challenges, allowing me to gain hands-on experience and create practical, impactful solutions. <br><br>
         
-        Beyond my technical pursuits, I’ve held leadership roles, most notably as President of the Volleyball Club at Stony Brook University, where I led a team of 10 Executive Board members and oversaw a club of over 100 active members.
-        I ensured deadlines were met, coordinated weekly 8-hour practice sessions to foster team cohesion, and organized events that elevated member engagement and community participation.
-        My efforts resulted in a 30% budget increase and contributed to the club becoming one of the largest sports organizations on campus.
-        These experiences enhanced my leadership, organizational, communication, and project management skills, equipping me to effectively motivate teams and manage large-scale initiatives.<br><br>
-        
-        I am now actively seeking full-time opportunities where I can apply my skills, continue learning, and contribute to meaningful projects that create real-world impact.
-        My passion for problem-solving drives me to approach challenges with creativity and determination, while my experience in software development equips me to deliver innovative solutions.
-        I am excited to grow in the tech industry, collaborate with diverse teams, and work on initiatives that push boundaries and make a lasting difference.</p>
-    </header>
-  </div>
+          I am now actively seeking full-time opportunities where I can apply my skills, continue learning, and contribute to meaningful projects that create real-world impact.
+          My passion for problem-solving drives me to approach challenges with creativity and determination, while my experience in software development equips me to deliver innovative solutions.
+          I am excited to grow in the tech industry, collaborate with diverse teams, and work on initiatives that push boundaries and make a lasting difference.</p>
+      </section>
+
+      <!-- Right Column: Skills and Resume -->
+      <div class="about-extras">
+        <div class="tabs">
+          <button class="tab-button active" onclick="showTab('languages')">Languages</button>
+          <button class="tab-button" onclick="showTab('frameworks')">Frameworks/Libraries</button>
+          <button class="tab-button" onclick="showTab('technologies')">Technologies</button>
+        </div>
+      
+        <div class="skills-container">
+          <!-- Languages Section -->
+          <div id="languages" class="skill-category tab-content active">
+            <h2>Languages</h2>
+            <div class="skill">
+              <label>Java</label>
+            </div>
+            <div class="skill">
+              <label>Python</label>
+            </div>
+            <div class="skill">
+              <label>JavaScript</label>
+            </div>
+            <div class="skill">
+              <label>HTML/CSS</label>
+            </div>
+          </div>
+
+      
+          <!-- Frameworks/Libraries Section -->
+          <div id="frameworks" class="skill-category tab-content hidden">
+            <h2>Frameworks/Libraries</h2>
+            <div class="skill">
+              <label>ReactJS</label>
+              <div class="skill-bar">
+                <div class="progress" style="width: 85%;">85%</div>
+              </div>
+            </div>
+            <div class="skill">
+              <label>Node.js</label>
+              <div class="skill-bar">
+                <div class="progress" style="width: 75%;">75%</div>
+              </div>
+            </div>
+            <div class="skill">
+              <label>MongoDB</label>
+              <div class="skill-bar">
+                <div class="progress" style="width: 70%;">70%</div>
+              </div>
+            </div>
+            <div class="skill">
+              <label>PyTorch</label>
+              <div class="skill-bar">
+                <div class="progress" style="width: 65%;">65%</div>
+              </div>
+            </div>
+          </div>
+      
+          <!-- Technologies Section -->
+          <div id="technologies" class="skill-category tab-content hidden">
+            <h2>Technologies</h2>
+            <div class="skill">
+              <label>Google Suite</label>
+              <div class="skill-bar">
+                <div class="progress" style="width: 90%;">90%</div>
+              </div>
+            </div>
+            <div class="skill">
+              <label>Microsoft Office 365</label>
+              <div class="skill-bar">
+                <div class="progress" style="width: 85%;">85%</div>
+              </div>
+            </div>
+            <div class="skill">
+              <label>Figma</label>
+              <div class="skill-bar">
+                <div class="progress" style="width: 80%;">80%</div>
+              </div>
+            </div>
+            <div class="skill">
+              <label>Canva</label>
+              <div class="skill-bar">
+                <div class="progress" style="width: 75%;">75%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      
+        <!-- Resume Button Below -->
+        <div class="resume-download">
+          <p>Download my resume:</p>
+          <a href="resume.pdf" class="download-button">Download</a>
+        </div>
+      </div>
+      
+           
+    </div>
+  </main>
+
   <script src="script.js"></script>
 </body>
 </html>
+
+
+
+
+
+
+
