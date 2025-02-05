@@ -570,6 +570,7 @@ body {
   font-size: 36px;
   margin-bottom: 20px;
   color: #ffffff;
+  font-style: italic;
 }
 
 .about-text p {
@@ -591,6 +592,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  margin-bottom: 100px;
 }
 
 .tabs {
@@ -654,6 +656,8 @@ body {
 .tab-content h2 {
   text-align: center;
   width: 100%;
+  font-size: 30px;
+  text-decoration: underline;
 }
 
 /* Skill Bar */
@@ -669,33 +673,21 @@ body {
   font-size: 16px;
   margin-bottom: 5px;
   text-align: center; /* Centers text */
-}
-
-.skill-bar {
-  background: rgba(255, 255, 255, 0.3);
-  height: 20px;
-  border-radius: 10px;
-  overflow: hidden;
-  position: relative;
-  width: 100%;
-}
-
-.progress {
-  background: #ffffff;
-  height: 100%;
-  text-align: center;
-  line-height: 20px;
-  border-radius: 10px;
-  white-space: nowrap;
-  padding: 0 5px;
-  box-sizing: border-box;
-  transition: width 0.5s ease-in-out;
+  font-weight: bold;
+  color: #ffffff;
 }
 
 /* Resume Download */
 .resume-download {
   text-align: center;
-  margin-top: 30px;
+  width: 100%;
+  font-size: 20px;
+  font-weight: bold;
+  background-color: #141314;
+  border-radius: 10px;
+  margin-top: 10px;
+  padding-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 .download-button {
@@ -708,7 +700,6 @@ body {
   border-radius: 8px;
   text-decoration: none;
   transition: background-color 0.3s ease, transform 0.2s ease;
-  margin-bottom: 100px;
 }
 
 .download-button:hover {
