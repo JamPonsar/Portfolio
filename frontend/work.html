@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home Page</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="work.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
@@ -57,17 +57,131 @@
     </ul>
   </div>
   
-  <div id="main-content">
-    <header>
-      <h1>Work Experience</h1>
-      <ul>
-        <!-- <li><strong>BMS Programmer</strong> at Controls NYC (2023-Present)</li>
-        <li><strong>QA Developer Intern</strong> at Controls NYC (2022-2023)</li>
-        <li><strong>Intramural Official</strong> at Stony Brook University (2021-2022)</li> -->
-        <li><strong>Work in Progress!</strong></li>
-      </ul>
-    </header>
+  <div id="work-experience-container">
+    <!-- Left: Experience List -->
+    <!-- Complete experience list with all actual roles from LinkedIn -->
+    <div id="experience-list">
+      <!-- Featured Role - BMS Programmer and QA Developer at Controls NYC -->
+      <div class="experience-box selected featured" data-experience="bms-qa-developer">
+        <div class="featured-badge">
+          <i class="fas fa-star"></i>
+          <span>Featured Role</span>
+        </div>
+        <div class="tab-content">
+          <div class="tab-text">
+            <div class="job-title">BMS Programmer and QA Developer</div>
+            <div class="company-name">Controls NYC</div>
+          </div>
+          <div class="company-logo">
+            <img src="images/controlsnyclogo.jpg" alt="Controls NYC Logo">
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Role - UNIQLO Store Associate -->
+      <div class="experience-box current" data-experience="uniqlo-associate">
+        <div class="current-badge">
+          <i class="fas fa-briefcase"></i>
+          <span>Current</span>
+        </div>
+        <div class="tab-content">
+          <div class="tab-text">
+            <div class="job-title">Store Associate</div>
+            <div class="company-name">UNIQLO</div>
+          </div>
+          <div class="company-logo">
+            <img src="images/uniqlo-logo.jpg" alt="UNIQLO Logo">
+          </div>
+        </div>
+      </div>
+
+      <!-- Intramural Official at Stony Brook -->
+      <div class="experience-box" data-experience="intramural-official">
+        <div class="tab-content">
+          <div class="tab-text">
+            <div class="job-title">Intramural Official</div>
+            <div class="company-name">Stony Brook University</div>
+          </div>
+          <div class="company-logo">
+            <img src="images/stonybrook-logo.jpg" alt="Stony Brook University Logo">
+          </div>
+        </div>
+      </div>
+
+      <!-- Volleyball Coach -->
+      <div class="experience-box" data-experience="volleyball-coach">
+        <div class="tab-content">
+          <div class="tab-text">
+            <div class="job-title">Developmental Coach</div>
+            <div class="company-name">East End Volleyball</div>
+          </div>
+          <div class="company-logo">
+            <img src="images/eastend-volleyball-logo.jpg" alt="East End Volleyball Logo">
+          </div>
+        </div>
+      </div>
+
+      <!-- Beach League Coordinator -->
+      <div class="experience-box" data-experience="beach-coordinator">
+        <div class="tab-content">
+          <div class="tab-text">
+            <div class="job-title">Beach League Coordinator</div>
+            <div class="company-name">East End Volleyball</div>
+          </div>
+          <div class="company-logo">
+            <img src="images/eastend-volleyball-logo.jpg" alt="East End Volleyball Logo">
+          </div>
+        </div>
+      </div>
+
+      <!-- Sample Packager -->
+      <div class="experience-box" data-experience="sample-packager">
+        <div class="tab-content">
+          <div class="tab-text">
+            <div class="job-title">Sample Packager</div>
+            <div class="company-name">The Merola Tile Company</div>
+          </div>
+          <div class="company-logo">
+            <img src="images/merola-tile-logo.jpg" alt="The Merola Tile Company Logo">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Details Panel -->
+    <div id="experience-details" class="show">
+      <div class="details-header">
+        <h2 id="experience-title"></h2>
+        <h3 id="experience-company"></h3>
+        <div id="experience-duration"></div>
+      </div>
+
+      <div class="details-section">
+        <div class="section-title">
+          <i class="fas fa-info-circle"></i>
+          Summary
+        </div>
+        <p id="experience-description"></p>
+      </div>
+
+      <div class="details-section">
+        <div class="section-title">
+          <i class="fas fa-tools"></i>
+          Skills & Technologies
+        </div>
+        <div class="skills-container" id="experience-skills"></div>
+      </div>
+
+      <div class="details-section">
+        <div class="section-title">
+          <i class="fas fa-trophy"></i>
+          Key Achievements
+        </div>
+        <ul class="achievements-list" id="experience-achievements"></ul>
+      </div>
+    </div>
   </div>
+  
   <script src="script.js"></script>
 </body>
 </html>

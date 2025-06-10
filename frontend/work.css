@@ -1,0 +1,598 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Navigation Bar Styling */
+.navbar {
+  background-color: #141314;
+  color: #ecf0f1;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+.nav-logo {
+  margin-right: auto;
+}
+
+.logo {
+  height: 40px;
+}
+
+.nav-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-grow: 1;
+}
+
+.nav-links li {
+  margin: 0;
+}
+
+.nav-links li a {
+  color: #ecf0f1;
+  text-decoration: none;
+  padding: 10px 15px;
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Hover Effect with Line Animation */
+.nav-links li a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  background-color: #d955ea;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: width 0.3s ease-in-out;
+}
+
+.nav-links li a:hover::after {
+  width: 80%;
+}
+
+/* Navigation Icons Styling */
+.nav-icons {
+  display: flex;
+  gap: 0px;
+}
+
+.nav-icons a {
+  color: #ecf0f1;
+  font-size: 20px;
+  text-decoration: none;
+}
+
+.nav-icons a:hover {
+  color: #d955ea;
+}
+
+/* Toggle Button Styling */
+.nav-toggle {
+  display: none;
+  cursor: pointer;
+  color: #ecf0f1;
+  font-size: 24px;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1100;
+  transition: transform 0.2s ease-in-out;
+  padding: 0 10px;
+}
+
+.nav-toggle.open i {
+  transform: rotate(180deg);
+}
+
+/* Sidebar Styling */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -100vw; /* Use viewport width to hide completely */
+  width: 100vw;
+  height: 100vh;
+  background-color: #141314;
+  color: #ecf0f1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  transition: left 0.4s ease-in-out;
+  pointer-events: none;
+}
+
+.sidebar.open {
+  left: 0;
+  pointer-events: auto;
+}
+
+/* Sidebar links */
+.sidebar-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.sidebar.open .sidebar-links {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.sidebar-links li {
+  width: 100%;
+  text-align: center;
+}
+
+.sidebar-links li a {
+  color: #ecf0f1;
+  text-decoration: none;
+  font-size: 30px;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Sidebar Icons Styling */
+.sidebar-icons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.sidebar-icons a {
+  color: #ecf0f1;
+  font-size: 30px;
+  width: 20px;
+}
+
+/* Close Button Styling */
+.close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: #ecf0f1;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Responsive Navigation */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
+
+  .nav-toggle {
+    display: block;
+  }
+}
+
+/* Work Experience Container */
+#work-experience-container {
+  display: flex;
+  min-height: 100vh;
+  margin-top: 80px;
+  padding: 40px 20px;
+  gap: 30px;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  align-items: flex-start; /* This ensures top alignment */
+}
+
+/* Left Sidebar: Experience Boxes */
+#experience-list {
+  width: 35%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px 0 0 0; /* Only top padding to accommodate the featured badge */
+  overflow: visible;
+}
+
+.experience-box {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  padding: 25px 20px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.experience-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.experience-box:hover::before {
+  left: 100%;
+}
+
+.experience-box:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Updated selected state to be darker/almost black */
+.experience-box.selected {
+  background: #1a1a1a; /* Dark almost black background */
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(26, 26, 26, 0.6);
+  border: 1px solid #333;
+}
+
+/* Tab content container */
+.tab-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Text section of the tab */
+.tab-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Company logo section */
+.company-logo {
+  flex-shrink: 0;
+  margin-left: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.company-logo img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 4px;
+  transition: transform 0.3s ease;
+}
+
+/* Logo hover effect */
+.experience-box:hover .company-logo img {
+  transform: scale(1.1);
+}
+
+/* Adjust logo styling for selected state */
+.experience-box.selected .company-logo img {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.job-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2c3e50;
+}
+
+.company-name {
+  font-size: 14px;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.experience-box.selected .job-title,
+.experience-box.selected .company-name {
+  color: white;
+}
+
+/* Featured role styling */
+.experience-box.featured {
+  position: relative;
+  border: 3px solid #ffd700; /* Gold border only */
+  background: rgba(255, 255, 255, 0.95); /* Keep original white background */
+  overflow: visible; /* Allow badge to pop out */
+}
+
+.experience-box.featured.selected {
+  background: #1a1a1a;
+  border: 3px solid #ffd700;
+  color: white;
+}
+
+.experience-box.featured.selected .job-title,
+.experience-box.featured.selected .company-name {
+  color: white;
+}
+
+/* Current role styling */
+.experience-box.current {
+  position: relative;
+  border: 3px solid #4CAF50; /* Green border for current role */
+  background: rgba(255, 255, 255, 0.95);
+  overflow: visible;
+}
+
+.experience-box.current.selected {
+  background: #1a1a1a;
+  border: 3px solid #4CAF50;
+  color: white;
+}
+
+.experience-box.current.selected .job-title,
+.experience-box.current.selected .company-name {
+  color: white;
+}
+
+.featured-badge {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.5);
+  z-index: 10;
+  white-space: nowrap;
+  transform: rotate(-5deg);
+  animation: pulse 2s infinite;
+}
+
+.current-badge {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.5);
+  z-index: 10;
+  white-space: nowrap;
+  transform: rotate(-5deg);
+  animation: pulse 2s infinite;
+}
+
+.featured-badge i,
+.current-badge i {
+  font-size: 12px;
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+/* Badge animations */
+@keyframes pulse {
+  0%, 100% { transform: rotate(-5deg) scale(1); }
+  50% { transform: rotate(-5deg) scale(1.05); }
+}
+
+@keyframes sparkle {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+/* Enhanced hover effect for featured role */
+.experience-box.featured:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 35px rgba(255, 215, 0, 0.3);
+}
+
+.experience-box.featured:hover .featured-badge {
+  transform: rotate(-5deg) scale(1.1);
+}
+
+.experience-box.featured.selected:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 12px 35px rgba(255, 215, 0, 0.4);
+}
+
+/* Enhanced hover effect for current role */
+.experience-box.current:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 35px rgba(76, 175, 80, 0.3);
+}
+
+.experience-box.current:hover .current-badge {
+  transform: rotate(-5deg) scale(1.1);
+}
+
+.experience-box.current.selected:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 12px 35px rgba(76, 175, 80, 0.4);
+}
+
+/* Right: Details Section */
+#experience-details {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  opacity: 0;
+  transform: translateX(30px);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 0; /* Ensure no top margin */
+}
+
+#experience-details.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.details-header {
+  border-bottom: 3px solid #667eea;
+  padding-bottom: 20px;
+  margin-bottom: 30px;
+}
+
+#experience-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+#experience-company {
+  font-size: 20px;
+  color: #667eea;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+#experience-duration {
+  font-size: 16px;
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+.details-section {
+  margin-bottom: 30px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title i {
+  color: #667eea;
+}
+
+#experience-description {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #34495e;
+  margin-bottom: 20px;
+}
+
+.skills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.skill-tag {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.skill-tag:hover {
+  transform: translateY(-2px);
+}
+
+.achievements-list {
+  list-style: none;
+  padding: 0;
+}
+
+.achievements-list li {
+  padding: 8px 0;
+  color: #34495e;
+  position: relative;
+  padding-left: 25px;
+}
+
+.achievements-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #27ae60;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #work-experience-container {
+    flex-direction: column;
+    padding: 20px 15px;
+    gap: 20px;
+  }
+
+  #experience-list {
+    width: 100%;
+  }
+
+  #experience-details {
+    padding: 25px;
+  }
+
+  #experience-title {
+    font-size: 24px;
+  }
+
+  #experience-company {
+    font-size: 18px;
+  }
+
+  /* Responsive adjustments for company logos */
+  .company-logo img {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .tab-content {
+    gap: 10px;
+  }
+  
+  .company-logo {
+    margin-left: 10px;
+  }
+}

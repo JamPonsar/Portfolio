@@ -712,3 +712,97 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
+
+
+
+
+
+
+/* Work Experience Page Layout */
+#work-experience-container {
+  display: flex;
+  flex-wrap: wrap;
+  min-height: 100vh;
+  margin: 40px auto;
+  gap: 20px;
+  padding: 50px 10px;
+  max-width: 1200px;
+}
+
+/* Left Sidebar: Experience Boxes */
+#experience-list {
+  width: 30%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.experience-box {
+  background-color: #4b0082;
+  color: white;
+  padding: 15px;
+  text-align: center;
+  font-size: 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.experience-box:hover {
+  background: #6a0dad;
+  transform: scale(1.05);
+}
+
+.experience-box.selected {
+  background-color: white;
+  color: #4b0082;
+  font-weight: bold;
+  border: 2px solid #4b0082;
+}
+
+/* Right: Details Section */
+#experience-details {
+  flex: 1;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  text-align: center;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  border: 2px solid #4b0082;
+}
+
+#experience-details.show {
+  display: block;
+  opacity: 1;
+}
+
+#experience-title {
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+#experience-description {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+#experience-image {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 8px;
+  display: none;
+}
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #work-experience-container {
+    flex-direction: column;
+  }
+
+  #experience-list {
+    width: 100%;
+  }
+}
