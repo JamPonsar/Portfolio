@@ -215,28 +215,19 @@ const experienceData = {
       "Ensured seamless operations and a positive participant experience"
     ]
   },
-  "volleyball-coach": {
-    title: "Developmental Coach",
+  "eastend-volleyball": {
+    title: "Developmental Coach & Beach League Coordinator",
     company: "East End Volleyball",
-    duration: "June 2023 - August 2023",
-    description: "Planned and hosted beach volleyball clinics for younger players of all skill levels, focusing on skill development and creating a positive learning environment.",
-    skills: ["Coaching", "Youth Development", "Beach Volleyball", "Teaching", "Communication", "Leadership"],
+    duration: "June 2022 - August 2023",
+    description: "Served dual roles coordinating beach volleyball league operations and coaching young players, managing equipment logistics while fostering skill development in a positive learning environment.",
+    skills: ["Coaching", "Youth Development", "Event Coordination", "Equipment Management", "Beach Volleyball", "Teaching", "Leadership", "Logistics"],
     achievements: [
       "Planned and hosted beach volleyball clinics for younger players of all skill levels",
       "Implemented techniques and skills for players to improve their game",
-      "Prioritized a positive and welcoming attitude for children to learn and grow"
-    ]
-  },
-  "beach-coordinator": {
-    title: "Beach League Coordinator",
-    company: "East End Volleyball",
-    duration: "June 2022 - August 2023",
-    description: "Coordinated beach volleyball league operations, managing equipment and ensuring smooth tournament execution.",
-    skills: ["Event Coordination", "Equipment Management", "Teamwork", "Logistics", "Organization"],
-    achievements: [
       "Monitored, maintained, and transported league equipment over a mile stretch of beach",
       "Coordinated with team to ensure all players had everything needed to play",
-      "Assisted in setup and takedown of majority of nets over 70+ courts"
+      "Assisted in setup and takedown of majority of nets over 70+ courts",
+      "Prioritized a positive and welcoming attitude for children to learn and grow"
     ]
   },
   "sample-packager": {
@@ -250,6 +241,22 @@ const experienceData = {
       "Maintained detailed and organized record of sample inventory",
       "Assisted in development and updating of company sample labels using Canva and Excel",
       "Processed sample orders efficiently for on-time delivery to customers"
+    ]
+  },
+  "volleyball-president": {
+    title: "President",
+    company: "Stony Brook Volleyball Club",
+    duration: "May 2023 - May 2024",
+    description: "Led one of the largest sports clubs on campus, overseeing intensive practice sessions and fostering skill development among over 50 active members. Successfully managed strategic initiatives that significantly increased the club's budget and community engagement.",
+    skills: ["Leadership", "Team Management", "Strategic Planning", "Fundraising", "Event Planning", "Budget Management", "Communication", "Organizational Development"],
+    achievements: [
+      "Demonstrated strong leadership by overseeing and conducting intensive practice sessions totaling more than 8 hours weekly",
+      "Fostered skill development and team cohesion among a dynamic and engaged group of over 50 active members",
+      "Established effective and transparent lines of communication within the team and Executive Board",
+      "Successfully increased the club's annual budget by 30% through strategic fundraising initiatives",
+      "Spearheaded fundraisers that successfully raised over $5,000",
+      "Organized and hosted numerous events, enhancing member engagement and community participation",
+      "Contributed to becoming one of the largest sports clubs on campus"
     ]
   }
 };
@@ -328,8 +335,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Load first experience by default
-  showExperience("bms-programmer");
+  // Load BMS role by default (updated key)
+  showExperience("bms-qa-developer");
 });
 
 // =============================================================================

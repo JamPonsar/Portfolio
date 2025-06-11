@@ -217,6 +217,32 @@ body {
   overflow: visible;
 }
 
+/* Section Headers */
+.section-header {
+  margin: 5px 0 10px 0;
+}
+
+.section-header h3 {
+  font-size: 20px;
+  font-weight: 900;
+  color: #1a1a1a;
+  margin: 0;
+  padding: 5px 0;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding-left: 15px;
+}
+
+/* Section Separator */
+.section-separator {
+  height: 2px;
+  background: linear-gradient(135deg, #0e173f 0%, #2c0b4e 100%);
+  margin: 25px 0;
+  border-radius: 2px;
+  opacity: 0.7;
+}
+
 .experience-box {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
