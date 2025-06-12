@@ -394,6 +394,94 @@ window.addEventListener('scroll', debounce(() => {
   });
 }, 100));
 
+
+// Add this to your existing script.js file
+
+// Cute Surprise Function
+function showSurprise() {
+  const surpriseContent = document.getElementById('surprise-content');
+  const surpriseTab = document.getElementById('surprise-tab');
+  
+  // Add a fun click animation to the tab
+  surpriseTab.style.transform = 'scale(0.9)';
+  setTimeout(() => {
+      surpriseTab.style.transform = '';
+  }, 150);
+  
+  // Show the surprise content with animation
+  if (!surpriseContent.classList.contains('show')) {
+      surpriseContent.classList.add('show');
+      
+      // Change the tab text after showing the surprise
+      setTimeout(() => {
+          surpriseTab.innerHTML = `
+              <i class="fas fa-heart"></i>
+              <span>Aww, you found it! 💕</span>
+              <i class="fas fa-star"></i>
+          `;
+      }, 800);
+      
+      // Add some confetti effect (optional)
+      createConfetti();
+  } else {
+      // If already shown, add a little bounce animation
+      surpriseContent.style.animation = 'none';
+      setTimeout(() => {
+          surpriseContent.style.animation = 'float 3s ease-in-out infinite';
+      }, 10);
+  }
+}
+
+// Optional confetti effect function
+function createConfetti() {
+  const colors = ['#ff6b9d', '#c44569', '#ffd93d', '#6bcf7f', '#4dabf7', '#9775fa'];
+  
+  for (let i = 0; i < 50; i++) {
+      setTimeout(() => {
+          const confetti = document.createElement('div');
+          confetti.style.position = 'fixed';
+          confetti.style.width = '10px';
+          confetti.style.height = '10px';
+          confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          confetti.style.left = Math.random() * 100 + 'vw';
+          confetti.style.top = '-10px';
+          confetti.style.borderRadius = '50%';
+          confetti.style.pointerEvents = 'none';
+          confetti.style.zIndex = '9999';
+          confetti.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+          
+          document.body.appendChild(confetti);
+          
+          // Remove confetti after animation
+          setTimeout(() => {
+              confetti.remove();
+          }, 5000);
+      }, i * 100);
+  }
+}
+
+// Add fall animation for confetti via CSS
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes fall {
+      from {
+          transform: translateY(-100vh) rotate(0deg);
+          opacity: 1;
+      }
+      to {
+          transform: translateY(100vh) rotate(360deg);
+          opacity: 0;
+      }
+  }
+`;
+document.head.appendChild(style);
+
+
+
+
+
+
+
 // =============================================================================
 // ERROR HANDLING AND CONSOLE LOGGING
 // =============================================================================
