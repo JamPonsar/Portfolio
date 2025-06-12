@@ -255,7 +255,7 @@ body {
   line-height: 1.6; /* Reduced from 1.8 */
   color: rgba(255, 255, 255, 0.9);
   margin-bottom: 18px; /* Reduced from 25px */
-  text-align: justify;
+  text-align: left;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
