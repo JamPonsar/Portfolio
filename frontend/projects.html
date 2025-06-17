@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home Page</title>
+  <title>Projects</title>
   <link rel="stylesheet" href="projects.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -56,17 +56,112 @@
       </li>
     </ul>
   </div>
-  
+
+  <!-- Main Content -->
   <div id="main-content">
-    <header>
-      <h1>Projects</h1>
-      <ul>
-        <!-- <li><strong>Fake Stack Overflow</strong> - A full-stack web application</li>
-        <li><strong>Robo-Rush</strong> - A 2D side scroller game</li> -->
-        <li><strong>Work in Progress!</strong></li>
-      </ul>
-    </header>
+    <div class="projects-header">
+      <h1>My Projects</h1>
+      <p>Explore my latest work and technical achievements</p>
+    </div>
+
+    <!-- Projects Grid -->
+    <div class="projects-container">
+      <!-- Dolphin Data Sharing Project -->
+      <div class="project-card featured" onclick="window.location.href='dds.html'">
+        <div class="featured-badge">
+          <i class="fas fa-star"></i>
+          <span>Featured</span>
+        </div>
+        <div class="project-image">
+          <img src="images/dds.png" alt="Dolphin Data Sharing Logo" class="project-logo">
+        </div>
+        <div class="project-content">
+          <h3>Dolphin Data Sharing</h3>
+          <p class="project-duration">Sep 2024 - Dec 2024</p>
+          <p class="project-description">
+            A decentralized file-sharing application with blockchain integration, featuring cryptographic hash-based uploads, P2P functionality, and secure transaction handling.
+          </p>
+          <div class="project-tech">
+            <span class="tech-tag">React.js</span>
+            <span class="tech-tag">Go</span>
+            <span class="tech-tag">Blockchain</span>
+            <span class="tech-tag">MongoDB</span>
+          </div>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/JamPonsar" target="_blank" class="github-link" onclick="event.stopPropagation()">
+            <i class="fab fa-github"></i>
+            GitHub
+          </a>
+          <div class="learn-more">
+            <i class="fas fa-arrow-right"></i>
+            Learn More
+          </div>
+        </div>
+      </div>
+
+      <!-- Fake Stack Overflow Project -->
+      <div class="project-card" onclick="window.location.href='fakestack.html'">
+        <div class="project-image">
+          <img src="images/stackoverflow.png" alt="Fake Stack Overflow Logo" class="project-logo">
+        </div>
+        <div class="project-content">
+          <h3>Fake Stack Overflow</h3>
+          <p class="project-duration">Mar 2024 - May 2024</p>
+          <p class="project-description">
+            A full-stack web application replicating core Stack Overflow features including Q&A posting, tag-based filtering, upvoting, and pagination.
+          </p>
+          <div class="project-tech">
+            <span class="tech-tag">React.js</span>
+            <span class="tech-tag">Node.js</span>
+            <span class="tech-tag">Express.js</span>
+            <span class="tech-tag">MongoDB</span>
+          </div>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/JamPonsar" target="_blank" class="github-link" onclick="event.stopPropagation()">
+            <i class="fab fa-github"></i>
+            GitHub
+          </a>
+          <div class="learn-more">
+            <i class="fas fa-arrow-right"></i>
+            Learn More
+          </div>
+        </div>
+      </div>
+
+      <!-- Robo-Rush Project -->
+      <div class="project-card" onclick="window.location.href='roborush.html'">
+        <div class="project-image">
+          <img src="images/roborush.jpg" alt="Robo-Rush Game Logo" class="project-logo">
+        </div>
+        <div class="project-content">
+          <h3>Robo-Rush</h3>
+          <p class="project-duration">Mar 2023 - May 2023</p>
+          <p class="project-description">
+            A 2D side scroller running game built from scratch with unique levels, advanced gameplay mechanics, double jumping, and dynamic animations.
+          </p>
+          <div class="project-tech">
+            <span class="tech-tag">TypeScript</span>
+            <span class="tech-tag">Firebase</span>
+            <span class="tech-tag">Wolfie2D</span>
+            <span class="tech-tag">Game Design</span>
+          </div>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/JamPonsar" target="_blank" class="github-link" onclick="event.stopPropagation()">
+            <i class="fab fa-github"></i>
+            GitHub
+          </a>
+          <div class="learn-more">
+            <i class="fas fa-arrow-right"></i>
+            Learn More
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
   <script src="script.js"></script>
 </body>
 </html>
