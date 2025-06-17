@@ -228,21 +228,22 @@ body {
   display: flex;
   gap: 60px;
   align-items: center;
+  justify-content: space-between;
 }
 
-/* About Text (Left) - Smaller and More Compact */
+/* About Text (Left) - Balanced spacing */
 .about-text {
-  flex: 2;
+  flex: 1;
   color: white;
-  padding: 0 60px 0 20px; /* Added padding from edges */
-  max-width: 600px; /* Limit width */
+  padding: 0 40px 0 40px; /* Equal padding on both sides */
+  max-width: 600px;
 }
 
 .about-text h1 {
-  font-size: 36px; /* Reduced from 48px */
+  font-size: 36px;
   font-weight: 700;
   color: white;
-  margin-bottom: 20px; /* Reduced from 30px */
+  margin-bottom: 20px;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.8) 100%);
   background-clip: text;
@@ -251,25 +252,26 @@ body {
 }
 
 .about-text p {
-  font-size: 15px; /* Reduced from 18px */
-  line-height: 1.6; /* Reduced from 1.8 */
+  font-size: 15px;
+  line-height: 1.6;
   color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 18px; /* Reduced from 25px */
+  margin-bottom: 18px;
   text-align: left;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* Profile Image Section (Right) - Full Image */
+/* Profile Image Section (Right) - Balanced and larger */
 .profile-image-section {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 0 40px 0 40px; /* Equal padding on both sides */
 }
 
 .profile-img {
   width: 100%;
-  max-width: 400px;
+  max-width: 500px; /* Increased from 400px */
   height: auto;
   border-radius: 15px;
   object-fit: cover;
@@ -468,27 +470,31 @@ body {
 @media (max-width: 1024px) {
   .about-container {
     padding: 30px 20px;
-    gap: 30px; /* Reduced from 40px */
+    gap: 30px;
   }
   
   .top-section {
     flex-direction: column;
-    gap: 30px; /* Reduced from 40px */
+    gap: 30px;
     text-align: center;
   }
   
   .about-text {
-    padding: 0 20px; /* Adjusted for mobile */
+    padding: 0 30px; /* Balanced mobile padding */
     max-width: 100%;
   }
   
+  .profile-image-section {
+    padding: 0 30px; /* Balanced mobile padding */
+  }
+  
   .about-text h1 {
-    font-size: 32px; /* Reduced from 36px */
+    font-size: 32px;
   }
   
   .profile-img {
     width: 100%;
-    max-width: 300px; /* Reduced for tablet */
+    max-width: 350px; /* Slightly larger for tablet */
     height: auto;
   }
   
@@ -512,20 +518,24 @@ body {
   }
   
   .about-text {
-    padding: 0 10px; /* Further reduced for mobile */
+    padding: 0 20px; /* Consistent mobile padding */
+  }
+  
+  .profile-image-section {
+    padding: 0 20px; /* Consistent mobile padding */
   }
   
   .about-text h1 {
-    font-size: 28px; /* Reduced from 32px */
+    font-size: 28px;
   }
   
   .about-text p {
-    font-size: 14px; /* Reduced from 15px */
+    font-size: 14px;
   }
   
   .profile-img {
     width: 100%;
-    max-width: 250px; /* Reduced for mobile */
+    max-width: 280px; /* Appropriate size for mobile */
     height: auto;
   }
   

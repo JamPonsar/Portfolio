@@ -478,7 +478,20 @@ document.head.appendChild(style);
 
 
 
+// Image height
+function matchImageHeight() {
+  if (window.innerWidth > 1400) {
+    const form = document.getElementById('contact-form');
+    const formHeight = form.offsetHeight;
+    document.documentElement.style.setProperty('--form-height', formHeight + 'px');
+  } else {
+    document.documentElement.style.removeProperty('--form-height');
+  }
+}
 
+// Run on load and resize
+window.addEventListener('load', matchImageHeight);
+window.addEventListener('resize', matchImageHeight);
 
 
 
