@@ -1,0 +1,268 @@
+---
+import { about, profile } from '../data/content';
+---
+
+<section id="about" class="section about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-head">
+        <span class="eyebrow" data-reveal>About me</span>
+        <h2 class="section-title" data-reveal style="--delay: 100ms">
+          Engineer by training, <em>builder</em> by habit.
+        </h2>
+
+        <dl class="stats">
+          {
+            about.stats.map((stat, i) => (
+              <div class="stat" data-reveal style={`--delay: ${200 + i * 100}ms`}>
+                <dt>{stat.value}</dt>
+                <dd>{stat.label}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+
+      <div class="about-body">
+        {
+          about.paragraphs.map((p, i) => (
+            <p data-reveal style={`--delay: ${150 + i * 120}ms`}>
+              {p}
+            </p>
+          ))
+        }
+
+        <div class="skills" data-reveal style="--delay: 400ms">
+          <h3>Toolkit</h3>
+          <ul>
+            {about.skills.map((skill) => <li class="tag">{skill}</li>)}
+          </ul>
+        </div>
+
+        <div class="resume" data-reveal style="--delay: 500ms">
+          <a href={profile.resume} target="_blank" rel="noreferrer" class="resume-view">
+            <svg class="doc" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path>
+              <path d="M14 3v5h5M9 13h6M9 17h4"></path>
+            </svg>
+            <span>View resume</span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+          <a href={profile.resume} download="Jamyang-Ponsar-Resume.pdf" class="resume-download" aria-label="Download resume as PDF">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <g class="dl-arrow"><path d="M12 4v11M7 11l5 5 5-5"></path></g>
+              <path d="M5 20h14"></path>
+            </svg>
+            <span>Download PDF</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .resume {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .resume a {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.95rem 1.5rem;
+    border-radius: 999px;
+    overflow: hidden;
+    isolation: isolate;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition:
+      transform 0.4s var(--ease),
+      color 0.4s ease,
+      box-shadow 0.4s var(--ease);
+  }
+
+  .resume a:hover,
+  .resume a:focus-visible {
+    transform: translateY(-3px);
+    outline: none;
+  }
+
+  .resume a:active {
+    transform: translateY(-1px) scale(0.98);
+  }
+
+  /* Both buttons fill with the accent color from the left on hover */
+  .resume a::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--accent);
+    transform: translateX(-101%);
+    transition: transform 0.6s var(--ease);
+  }
+
+  .resume a:hover::before,
+  .resume a:focus-visible::before {
+    transform: none;
+  }
+
+  .resume-view {
+    background: var(--ink);
+    color: var(--surface);
+  }
+
+  .resume-view:hover,
+  .resume-view:focus-visible {
+    box-shadow: 0 16px 30px -14px rgba(181, 101, 47, 0.7);
+  }
+
+  .resume-view .doc {
+    transition: transform 0.5s var(--ease);
+  }
+
+  .resume-view:hover .doc {
+    transform: rotate(-8deg) scale(1.1);
+  }
+
+  .resume-view .arrow {
+    transition: transform 0.5s var(--ease);
+  }
+
+  .resume-view:hover .arrow {
+    transform: translateX(5px);
+  }
+
+  .resume-download {
+    border: 1px solid var(--ink);
+    color: var(--ink);
+  }
+
+  .resume-download:hover,
+  .resume-download:focus-visible {
+    border-color: var(--accent);
+    color: var(--surface);
+  }
+
+  /* The arrow drops into the tray, then a fresh one slides in from above */
+  .resume-download:hover .dl-arrow {
+    animation: drop 1s var(--ease) infinite;
+  }
+
+  @keyframes drop {
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    45% {
+      transform: translateY(6px);
+      opacity: 0;
+    }
+    46% {
+      transform: translateY(-6px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .resume-download:hover .dl-arrow {
+      animation: none;
+    }
+  }
+
+  .about {
+    background: var(--surface);
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: clamp(3rem, 8vw, 7rem);
+  }
+
+  .stats {
+    display: grid;
+    gap: 1.5rem;
+    margin: 3rem 0 0;
+  }
+
+  .stat {
+    display: flex;
+    align-items: baseline;
+    gap: 1.25rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .stat dt {
+    min-width: 4.5rem;
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--accent);
+  }
+
+  .stat dd {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+
+  .about-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding-top: 0.5rem;
+    font-size: 1.12rem;
+    color: var(--ink-soft);
+  }
+
+  .about-body p:first-child {
+    color: var(--ink);
+  }
+
+  .skills {
+    margin-top: 1.5rem;
+  }
+
+  .skills h3 {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  .skills ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+  }
+
+  .skills .tag {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+
+  .skills .tag:hover {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--surface);
+  }
+
+  @media (max-width: 860px) {
+    .about-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

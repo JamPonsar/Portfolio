@@ -1,0 +1,862 @@
+---
+// A browser-only port of the Fake Stack Overflow client. The Express/MongoDB
+// backend is replaced by in-memory sample data, but sorting, search, pagination
+// and Ask-form validation follow the original React components.
+---
+
+<div class="fso" id="fso-demo">
+  <div class="fso-head">
+    <span class="fso-logo">Fake Stack Overflow</span>
+    <input class="fso-search" type="search" placeholder="Search… try [react]" aria-label="Search questions" />
+  </div>
+  <div class="fso-body">
+    <nav class="fso-nav">
+      <button type="button" data-action="nav-questions">Questions</button>
+      <button type="button" data-action="nav-tags">Tags</button>
+    </nav>
+    <div class="fso-main" aria-live="polite"></div>
+  </div>
+</div>
+
+<script>
+  type Answer = { text: string; by: string; date: number; votes: number; id: string };
+  type Question = {
+    id: string;
+    title: string;
+    text: string;
+    summary: string;
+    tags: string[];
+    by: string;
+    date: number;
+    views: number;
+    votes: number;
+    answers: Answer[];
+  };
+
+  const root = document.getElementById('fso-demo') as HTMLElement;
+  const main = root.querySelector<HTMLElement>('.fso-main')!;
+  const searchBox = root.querySelector<HTMLInputElement>('.fso-search')!;
+
+  const PAGE_SIZE = 5;
+  const HOUR = 3600e3;
+  const now = Date.now();
+  let uid = 0;
+  const ans = (text: string, by: string, hoursAgo: number, votes = 0): Answer => ({
+    text,
+    by,
+    date: now - hoursAgo * HOUR,
+    votes,
+    id: `a${uid++}`,
+  });
+
+  const questions: Question[] = [
+    {
+      id: 'q1',
+      title: 'How do I pass data from a parent to a child component in React?',
+      summary: 'Child component needs a value that lives in the parent’s state.',
+      text: 'My parent component keeps a list in state and I want a child to render it. Do I need context for this or is there something simpler?',
+      tags: ['react', 'javascript'],
+      by: 'henryc',
+      date: now - 3 * HOUR,
+      views: 42,
+      votes: 5,
+      answers: [
+        ans('Pass it as a prop: <List items={items} />, then read props.items in the child. Context is for values many levels down.', 'jamp', 2, 4),
+        ans('Agreed — start with props. See [Passing Props](https://react.dev/learn/passing-props-to-a-component).', 'devon', 1, 1),
+      ],
+    },
+    {
+      id: 'q2',
+      title: 'Mongoose populate() returns an empty array',
+      summary: 'populate on an ObjectId array gives [] even though the ids exist.',
+      text: 'My Question schema has tags: [{ type: ObjectId, ref: "Tag" }] but .populate("tags") returns an empty array.',
+      tags: ['mongodb', 'mongoose', 'node.js'],
+      by: 'sam_k',
+      date: now - 30 * HOUR,
+      views: 87,
+      votes: 3,
+      answers: [ans('Check the model name in ref matches mongoose.model("Tag", ...) exactly — it is case sensitive.', 'jamp', 26, 6)],
+    },
+    {
+      id: 'q3',
+      title: 'Express: req.body is undefined in my POST route',
+      summary: 'Body is always undefined when posting JSON with axios.',
+      text: 'I am sending JSON with axios.post but req.body is undefined inside app.post("/addQuestion").',
+      tags: ['express', 'node.js', 'axios'],
+      by: 'priya',
+      date: now - 50 * HOUR,
+      views: 133,
+      votes: 9,
+      answers: [
+        ans('You need the JSON body parser: app.use(express.json()) before your routes. Docs: [express.json](https://expressjs.com/en/api.html#express.json)', 'henryc', 49, 7),
+        ans('Also make sure the Content-Type header is application/json.', 'lee', 20, 2),
+      ],
+    },
+    {
+      id: 'q4',
+      title: 'CSS grid or flexbox for a question list layout?',
+      summary: 'Stats column, title and tags — which layout tool fits?',
+      text: 'Each row has a stats column on the left, title and tags in the middle, and author on the right. Grid or flex?',
+      tags: ['css'],
+      by: 'mo',
+      date: now - 5 * HOUR,
+      views: 12,
+      votes: 0,
+      answers: [],
+    },
+    {
+      id: 'q5',
+      title: 'Why does useEffect run twice in development?',
+      summary: 'My fetch inside useEffect fires two requests locally.',
+      text: 'Every time the page loads I see two identical requests to /questions in the network tab.',
+      tags: ['react'],
+      by: 'lee',
+      date: now - 80 * HOUR,
+      views: 210,
+      votes: 12,
+      answers: [ans('That is StrictMode re-running effects to catch missing cleanups. It does not happen in production builds.', 'devon', 70, 9)],
+    },
+    {
+      id: 'q6',
+      title: 'Paginating MongoDB results with skip and limit',
+      summary: 'Show five questions per page from the server.',
+      text: 'What is the cleanest way to return page N of questions, five per page, sorted by newest?',
+      tags: ['mongodb', 'express'],
+      by: 'jamp',
+      date: now - 120 * HOUR,
+      views: 64,
+      votes: 4,
+      answers: [ans('Question.find().sort({ ask_date_time: -1 }).skip(n * 5).limit(5) works fine for small collections.', 'sam_k', 100, 3)],
+    },
+    {
+      id: 'q7',
+      title: 'Axios request blocked by CORS from localhost:3000',
+      summary: 'React dev server cannot reach Express on port 8000.',
+      text: 'The browser says the request was blocked by CORS policy. Where do I fix this, client or server?',
+      tags: ['axios', 'express'],
+      by: 'priya',
+      date: now - 8 * HOUR,
+      views: 19,
+      votes: 1,
+      answers: [],
+    },
+  ];
+
+  type View = 'list' | 'tags' | 'question' | 'ask';
+  const state = {
+    view: 'list' as View,
+    sort: 'newest',
+    search: '',
+    page: 0,
+    qid: '',
+    answering: false,
+    myVotes: {} as Record<string, number>,
+    errors: {} as Record<string, string>,
+    draft: {} as Record<string, string>,
+  };
+
+  // --- helpers ---------------------------------------------------------------
+
+  const esc = (s: string) =>
+    s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+
+  // [text](url) → link, as in helperfunctions/hyperlink.js (escaped first, http(s) only)
+  const linkify = (s: string) =>
+    esc(s).replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  // Port of helperfunctions/time.js
+  function findTime(ms: number) {
+    const d = new Date(ms);
+    const n = new Date();
+    const secs = (n.getTime() - d.getTime()) / 1000;
+    const pad = (x: number) => String(x).padStart(2, '0');
+    if (d.toDateString() === n.toDateString()) {
+      if (secs < 60) return `${Math.floor(secs)} seconds ago`;
+      if (secs < 3600) return `${Math.floor(secs / 60)} minutes ago`;
+      return `${Math.floor(secs / 3600)} hours ago`;
+    }
+    const clock = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    if (d.getFullYear() === n.getFullYear()) return `${MONTHS[d.getMonth()]} ${d.getDate()} at ${clock}`;
+    return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} at ${clock}`;
+  }
+
+  const lastActivity = (q: Question) => Math.max(...q.answers.map((a) => a.date));
+
+  function sorted(list: Question[]) {
+    const newest = [...list].sort((a, b) => b.date - a.date);
+    if (state.sort === 'unanswered') return newest.filter((q) => q.answers.length === 0);
+    if (state.sort === 'active') {
+      const answered = newest.filter((q) => q.answers.length).sort((a, b) => lastActivity(b) - lastActivity(a));
+      return answered.concat(newest.filter((q) => !q.answers.length));
+    }
+    return newest;
+  }
+
+  // Mirrors search.js: each term is either [tag] or a word; results are merged without duplicates.
+  function searchResults() {
+    const seen = new Set<Question>();
+    state.search
+      .trim()
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean)
+      .forEach((term) => {
+        const isTag = term.startsWith('[') && term.endsWith(']');
+        const word = isTag ? term.slice(1, -1) : term;
+        questions.forEach((q) => {
+          const hit = isTag
+            ? q.tags.includes(word)
+            : q.title.toLowerCase().includes(word) || q.text.toLowerCase().includes(word);
+          if (hit) seen.add(q);
+        });
+      });
+    return [...seen];
+  }
+
+  const allTags = () => [...new Set(questions.flatMap((q) => q.tags))].sort();
+
+  function voteHtml(id: string, votes: number) {
+    const mine = state.myVotes[id] ?? 0;
+    return `<div class="fso-votes">
+      <button type="button" data-action="vote" data-id="${id}" data-dir="1" class="${mine === 1 ? 'on' : ''}" aria-label="Upvote">▲</button>
+      <strong>${votes}</strong>
+      <button type="button" data-action="vote" data-id="${id}" data-dir="-1" class="${mine === -1 ? 'on' : ''}" aria-label="Downvote">▼</button>
+    </div>`;
+  }
+
+  const err = (k: string) => (state.errors[k] ? `<span class="fso-err">${state.errors[k]}</span>` : '');
+  const draft = (k: string) => esc(state.draft[k] ?? '');
+
+  // --- views -----------------------------------------------------------------
+
+  function listView() {
+    const searching = state.search.trim() !== '';
+    const list = sorted(searching ? searchResults() : questions);
+    const pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+    state.page = Math.min(state.page, pages - 1);
+    const slice = list.slice(state.page * PAGE_SIZE, state.page * PAGE_SIZE + PAGE_SIZE);
+    const title = searching ? 'Search Results' : 'All Questions';
+
+    return `
+      <div class="fso-top">
+        <h5>${title}</h5>
+        <button type="button" class="fso-btn" data-action="ask">Ask Question</button>
+      </div>
+      <div class="fso-top">
+        <span>${list.length} question${list.length === 1 ? '' : 's'}</span>
+        <div class="fso-sort">
+          ${['newest', 'active', 'unanswered']
+            .map(
+              (s) =>
+                `<button type="button" data-action="sort" data-sort="${s}" class="${state.sort === s ? 'on' : ''}">${s[0].toUpperCase() + s.slice(1)}</button>`
+            )
+            .join('')}
+        </div>
+      </div>
+      ${
+        slice.length
+          ? slice
+              .map(
+                (q) => `
+        <div class="fso-post">
+          <div class="fso-stats"><span>${q.answers.length} answers</span><span>${q.views} views</span><span>${q.votes} votes</span></div>
+          <div>
+            <button type="button" class="fso-title" data-action="open" data-id="${q.id}">${esc(q.title)}</button>
+            <p class="fso-summary">${esc(q.summary)}</p>
+            <div class="fso-tags">${q.tags.map((t) => `<button type="button" data-action="tag" data-tag="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+          </div>
+          <div class="fso-author"><b>${esc(q.by)}</b> asked ${findTime(q.date)}</div>
+        </div>`
+              )
+              .join('')
+          : '<p class="fso-empty">No questions found.</p>'
+      }
+      ${
+        pages > 1
+          ? `<div class="fso-pager">
+              <button type="button" class="fso-btn ghost" data-action="prev" ${state.page === 0 ? 'disabled' : ''}>Prev</button>
+              <span>Page ${state.page + 1} of ${pages}</span>
+              <button type="button" class="fso-btn ghost" data-action="next">Next</button>
+            </div>`
+          : ''
+      }`;
+  }
+
+  function tagsView() {
+    const tags = allTags();
+    return `
+      <div class="fso-top">
+        <h5>${tags.length} Tags</h5>
+        <h5>All Tags</h5>
+        <button type="button" class="fso-btn" data-action="ask">Ask Question</button>
+      </div>
+      <div class="fso-taggrid">
+        ${tags
+          .map((t) => {
+            const n = questions.filter((q) => q.tags.includes(t)).length;
+            return `<button type="button" class="fso-tagcard" data-action="tag" data-tag="${esc(t)}"><b>${esc(t)}</b><span>${n} question${n === 1 ? '' : 's'}</span></button>`;
+          })
+          .join('')}
+      </div>`;
+  }
+
+  function questionView() {
+    const q = questions.find((x) => x.id === state.qid)!;
+    const answers = [...q.answers].sort((a, b) => b.date - a.date);
+    return `
+      <button type="button" class="fso-back" data-action="nav-questions">← All questions</button>
+      <div class="fso-top">
+        <span><b>${q.answers.length}</b> answers</span>
+        <h5>${esc(q.title)}</h5>
+        <button type="button" class="fso-btn" data-action="ask">Ask Question</button>
+      </div>
+      <div class="fso-qbody">
+        ${voteHtml(q.id, q.votes)}
+        <div class="fso-text">${linkify(q.text)}</div>
+        <div class="fso-author"><span>${q.views} views</span><b>${esc(q.by)}</b> asked ${findTime(q.date)}</div>
+      </div>
+      ${answers
+        .map(
+          (a) => `
+        <div class="fso-answer">
+          ${voteHtml(a.id, a.votes)}
+          <div class="fso-text">${linkify(a.text)}</div>
+          <div class="fso-author"><b>${esc(a.by)}</b> answered ${findTime(a.date)}</div>
+        </div>`
+        )
+        .join('')}
+      ${
+        state.answering
+          ? `<form class="fso-form" data-form="answer" novalidate>
+              <label>Your answer* ${err('text')}<textarea name="text" rows="4" placeholder="Links: [text](https://...)">${draft('text')}</textarea></label>
+              <div class="fso-actions"><button class="fso-btn" type="submit">Post Answer</button><button type="button" class="fso-btn ghost" data-action="cancel-answer">Cancel</button></div>
+            </form>`
+          : `<button type="button" class="fso-btn" data-action="answer">Answer Question</button>`
+      }`;
+  }
+
+  function askView() {
+    return `
+      <form class="fso-form" data-form="ask" novalidate>
+        <h5>Ask a question</h5>
+        <label>Question title* <small>Limit title to 100 characters or less</small>${err('title')}<input name="title" value="${draft('title')}" /></label>
+        <label>Question text* <small>Add details. Links: [text](https://...)</small>${err('text')}<textarea name="text" rows="4">${draft('text')}</textarea></label>
+        <label>Tags* <small>Up to 5 tags, separated by spaces</small>${err('tags')}<input name="tags" value="${draft('tags')}" /></label>
+        <label>Summary* <small>Limit to 140 characters or less</small>${err('summary')}<input name="summary" value="${draft('summary')}" /></label>
+        <div class="fso-actions"><button class="fso-btn" type="submit">Post Question</button><button type="button" class="fso-btn ghost" data-action="nav-questions">Cancel</button></div>
+      </form>`;
+  }
+
+  function render() {
+    root.querySelectorAll<HTMLElement>('.fso-nav button').forEach((b) => {
+      const tags = b.dataset.action === 'nav-tags';
+      b.classList.toggle('on', tags ? state.view === 'tags' : state.view === 'list');
+    });
+    main.innerHTML = { list: listView, tags: tagsView, question: questionView, ask: askView }[state.view]();
+  }
+
+  // --- validation (rules from ask.js) ----------------------------------------
+
+  function linkError(text: string) {
+    for (const m of text.matchAll(/\[(.*?)\]\((.*?)\)/g)) {
+      const url = m[2].trim();
+      if (!url || !(url.startsWith('http://') || url.startsWith('https://')))
+        return 'Hyperlinks must begin with http:// or https://';
+    }
+    return '';
+  }
+
+  function validateAsk(f: Record<string, string>) {
+    const e: Record<string, string> = {};
+    const title = f.title.trim();
+    if (!title) e.title = 'Please enter a title';
+    else if (title.length > 100) e.title = 'Please limit title length to 100 characters or less';
+    if (!f.text.trim()) e.text = 'Please enter question text';
+    else if (linkError(f.text)) e.text = linkError(f.text);
+    const tags = f.tags.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    if (!tags.length) e.tags = 'Please enter at least one tag';
+    else if (tags.some((t) => t.length > 20)) e.tags = 'Each tag must be 20 characters or less';
+    else if (new Set(tags).size > 5) e.tags = 'Please enter no more than 5 tags';
+    const summary = f.summary.trim();
+    if (!summary) e.summary = 'Please enter a summary';
+    else if (summary.length > 140) e.summary = 'Please limit summary to 140 characters or less';
+    return { e, tags: [...new Set(tags)] };
+  }
+
+  // --- events ----------------------------------------------------------------
+
+  const go = (view: View) => {
+    state.view = view;
+    state.errors = {};
+    state.draft = {};
+    state.answering = false;
+    render();
+  };
+
+  root.addEventListener('click', (ev) => {
+    const btn = (ev.target as HTMLElement).closest<HTMLElement>('[data-action]');
+    if (!btn) return;
+    const d = btn.dataset;
+    switch (d.action) {
+      case 'nav-questions':
+        state.search = searchBox.value = '';
+        state.sort = 'newest';
+        state.page = 0;
+        go('list');
+        break;
+      case 'nav-tags':
+        state.search = searchBox.value = '';
+        go('tags');
+        break;
+      case 'ask':
+        go('ask');
+        break;
+      case 'sort':
+        state.sort = d.sort!;
+        state.page = 0;
+        render();
+        break;
+      case 'prev':
+        state.page = Math.max(0, state.page - 1);
+        render();
+        break;
+      case 'next': {
+        // Next wraps back to the first page, like the original
+        const total = Math.ceil((state.search ? searchResults() : questions).length / PAGE_SIZE);
+        state.page = state.page + 1 >= total ? 0 : state.page + 1;
+        render();
+        break;
+      }
+      case 'tag':
+        state.search = searchBox.value = `[${d.tag}]`;
+        state.page = 0;
+        go('list');
+        break;
+      case 'open': {
+        const q = questions.find((x) => x.id === d.id)!;
+        q.views++;
+        state.qid = q.id;
+        go('question');
+        main.scrollIntoView({ block: 'nearest' });
+        break;
+      }
+      case 'vote': {
+        const id = d.id!;
+        const dir = Number(d.dir);
+        const target = questions.find((q) => q.id === id) ?? questions.flatMap((q) => q.answers).find((a) => a.id === id)!;
+        const prev = state.myVotes[id] ?? 0;
+        const next = prev === dir ? 0 : dir;
+        target.votes += next - prev;
+        state.myVotes[id] = next;
+        render();
+        break;
+      }
+      case 'answer':
+        state.answering = true;
+        render();
+        main.querySelector('textarea')?.focus();
+        break;
+      case 'cancel-answer':
+        state.answering = false;
+        state.errors = {};
+        render();
+        break;
+    }
+  });
+
+  root.addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const form = ev.target as HTMLFormElement;
+    const f = Object.fromEntries(new FormData(form)) as Record<string, string>;
+    state.draft = f;
+
+    if (form.dataset.form === 'ask') {
+      const { e, tags } = validateAsk(f);
+      state.errors = e;
+      if (Object.keys(e).length) return render();
+      questions.push({
+        id: `q${uid++}`,
+        title: f.title.trim(),
+        text: f.text.trim(),
+        summary: f.summary.trim(),
+        tags,
+        by: 'you',
+        date: Date.now(),
+        views: 0,
+        votes: 0,
+        answers: [],
+      });
+      state.search = searchBox.value = '';
+      state.sort = 'newest';
+      state.page = 0;
+      go('list');
+    } else {
+      const text = f.text.trim();
+      state.errors = text ? (linkError(text) ? { text: linkError(text) } : {}) : { text: 'Answer text cannot be empty' };
+      if (Object.keys(state.errors).length) return render();
+      questions.find((q) => q.id === state.qid)!.answers.push(ans(text, 'you', 0));
+      state.draft = {};
+      state.answering = false;
+      render();
+    }
+  });
+
+  searchBox.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Enter') return;
+    state.search = searchBox.value;
+    state.page = 0;
+    go('list');
+  });
+
+  render();
+</script>
+
+<style is:global>
+  .fso {
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    overflow: hidden;
+    background: var(--surface);
+    font-size: 0.92rem;
+  }
+
+  .fso button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .fso-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.9rem 1.25rem;
+    background: #2d2a26;
+    color: var(--surface);
+  }
+
+  .fso-logo {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+  }
+
+  .fso-search {
+    flex: 1;
+    max-width: 22rem;
+    min-width: 10rem;
+    padding: 0.5rem 0.8rem;
+    border: 0;
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+  }
+
+  .fso-body {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    min-height: 26rem;
+  }
+
+  .fso-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem 0.5rem;
+    border-right: 1px dashed var(--line);
+  }
+
+  .fso-nav button {
+    padding: 0.5rem 0.75rem;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    text-align: left;
+    font-weight: 600;
+    color: var(--ink-muted);
+  }
+
+  .fso-nav button.on {
+    background: var(--bg);
+    color: var(--ink);
+  }
+
+  .fso-main {
+    display: grid;
+    align-content: start;
+    gap: 0.9rem;
+    min-width: 0;
+    padding: 1.25rem;
+  }
+
+  .fso-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .fso h5 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 400;
+  }
+
+  .fso-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--surface) !important;
+    font-weight: 600;
+    justify-self: start;
+  }
+
+  .fso-btn.ghost {
+    background: transparent;
+    border-color: var(--line);
+    color: var(--ink) !important;
+  }
+
+  .fso-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .fso-sort {
+    display: flex;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .fso-sort button {
+    padding: 0.35rem 0.85rem;
+    border: 0;
+    background: transparent;
+    font-size: 0.85rem;
+  }
+
+  .fso-sort button.on {
+    background: var(--ink);
+    color: var(--surface);
+  }
+
+  .fso-post {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr auto;
+    gap: 1rem;
+    padding: 0.9rem 0;
+    border-top: 1px dashed var(--line);
+  }
+
+  .fso-stats {
+    display: grid;
+    align-content: start;
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+  }
+
+  .fso-title {
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+    font-weight: 700;
+    color: #3b6f86 !important;
+  }
+
+  .fso-title:hover {
+    text-decoration: underline;
+  }
+
+  .fso-summary {
+    margin-top: 0.2rem;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+
+  .fso-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+  }
+
+  .fso-tags button {
+    padding: 0.15rem 0.6rem;
+    border: 0;
+    border-radius: 6px;
+    background: #2d2a26;
+    color: var(--surface);
+    font-size: 0.75rem;
+  }
+
+  .fso-author {
+    display: grid;
+    align-content: start;
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+
+  .fso-author b {
+    color: var(--accent);
+  }
+
+  .fso-pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    font-size: 0.85rem;
+  }
+
+  .fso-empty {
+    color: var(--ink-muted);
+  }
+
+  .fso-taggrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    gap: 0.75rem;
+  }
+
+  .fso-tagcard {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.9rem;
+    border: 1px dashed var(--ink-muted);
+    border-radius: 10px;
+    background: transparent;
+    text-align: left;
+  }
+
+  .fso-tagcard b {
+    color: #3b6f86;
+  }
+
+  .fso-tagcard span {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+  }
+
+  .fso-back {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-weight: 600;
+    color: var(--ink-muted) !important;
+  }
+
+  .fso-qbody,
+  .fso-answer {
+    display: grid;
+    grid-template-columns: 2.5rem 1fr auto;
+    gap: 1rem;
+    padding: 0.9rem 0;
+    border-top: 1px dashed var(--line);
+  }
+
+  .fso-text a {
+    color: #3b6f86;
+    text-decoration: underline;
+  }
+
+  .fso-votes {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+  }
+
+  .fso-votes button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink-muted) !important;
+    font-size: 0.8rem;
+  }
+
+  .fso-votes button.on {
+    color: var(--accent) !important;
+  }
+
+  .fso-form {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .fso-form label {
+    display: grid;
+    gap: 0.3rem;
+    font-weight: 700;
+  }
+
+  .fso-form small {
+    font-weight: 400;
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+  }
+
+  .fso-form input,
+  .fso-form textarea {
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--ink);
+    font: inherit;
+    font-weight: 400;
+    resize: vertical;
+  }
+
+  .fso-err {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #b3261e;
+  }
+
+  .fso-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .fso-body {
+      grid-template-columns: 1fr;
+    }
+
+    .fso-nav {
+      flex-direction: row;
+      border-right: 0;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .fso-post {
+      grid-template-columns: 1fr;
+      gap: 0.4rem;
+    }
+
+    .fso-stats {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .fso-qbody,
+    .fso-answer {
+      grid-template-columns: 2rem 1fr;
+    }
+
+    .fso-qbody .fso-author,
+    .fso-answer .fso-author {
+      grid-column: 2;
+      white-space: normal;
+    }
+  }
+</style>

@@ -1,0 +1,168 @@
+/* Full-screen detail panel opened from a card (see scripts/expand.ts). */
+
+.xp-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  box-shadow: 0 40px 120px -30px rgba(28, 26, 23, 0.6);
+}
+
+.xp-panel[hidden] {
+  display: none;
+}
+
+.xp-panel .xp-ghost {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  pointer-events: none;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.xp-inner {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: clamp(1.25rem, 4vw, 3rem) var(--gutter) 4rem;
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.xp-panel.show .xp-inner {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.6s ease 0.7s,
+    transform 0.9s var(--ease) 0.7s;
+}
+
+.xp-bar,
+.xp-detail {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.xp-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.xp-close {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.xp-close:hover,
+.xp-close:focus-visible {
+  background: var(--ink);
+  color: var(--surface);
+  outline: none;
+}
+
+.xp-detail {
+  padding-top: clamp(2.5rem, 8vw, 5rem);
+}
+
+.xp-detail h3 {
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  line-height: 1;
+}
+
+.xp-detail h4 {
+  margin: 3rem 0 1rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.xp-lead {
+  margin-top: 1.75rem;
+  max-width: 40rem;
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.xp-overview {
+  display: grid;
+  gap: 1rem;
+  max-width: 44rem;
+  margin-top: 2rem;
+  color: var(--ink-soft);
+}
+
+.xp-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.xp-list li {
+  max-width: 44rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.xp-detail .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.xp-detail .tag {
+  color: var(--ink-soft);
+  border-color: rgba(28, 26, 23, 0.25);
+}
+
+.xp-link {
+  display: inline-flex;
+  gap: 0.5rem;
+  margin-top: 3rem;
+  padding: 0.85rem 1.4rem;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  font-weight: 600;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.xp-link:hover {
+  background: var(--ink);
+  color: var(--surface);
+}

@@ -1,0 +1,1621 @@
+---
+// A browser-only rebuild of the PHAJAM React app (PHAJAM/src/components):
+// same sidebar, pages, tables and dialogs. The Go services (DHT node, wallet
+// server, proxy) are replaced by in-memory stand-ins; SHA-256 hashing is real.
+---
+
+<div class="dds" id="dolphin-demo">
+  <aside class="dds-nav">
+    <img src="/images/dolphin-logo.png" alt="Dolphin Data Sharing" width="120" height="93" />
+    <div class="dds-nav-top">
+      <button type="button" data-page="home"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path></svg><span>HOME</span></button>
+      <button type="button" data-page="files"><svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8zm2 16H8v-2h8zm0-4H8v-2h8zm-3-5V3.5L18.5 9z"></path></svg><span>FILES</span></button>
+      <button type="button" data-page="explore"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39"></path></svg><span>EXPLORE</span></button>
+      <button type="button" data-page="proxy"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3m-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3m0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5m8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5"></path></svg><span>PROXY</span></button>
+      <button type="button" data-page="profile"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16"></path><circle cx="15.5" cy="9.5" r="1.5"></circle><circle cx="8.5" cy="9.5" r="1.5"></circle><path d="M12 16c-1.48 0-2.75-.81-3.45-2H6.88a5.99 5.99 0 0 0 10.24 0h-1.67c-.7 1.19-1.97 2-3.45 2"></path></svg><span>PROFILE</span></button>
+    </div>
+    <div class="dds-nav-bottom">
+      <button type="button" data-page="settings"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2"></path></svg><span>SETTINGS</span></button>
+    </div>
+  </aside>
+
+  <div class="dds-main"></div>
+
+  <div class="dds-toast" role="status" aria-live="polite"></div>
+
+  <div class="dds-layer" hidden>
+    <div class="dds-dialog" role="dialog" aria-modal="true"></div>
+  </div>
+</div>
+
+<script>
+  type Row = { filename: string; hash: string; cost: number; timestamp: number };
+  type NetFile = { filename: string; blob: Blob; providers: Map<string, number> };
+  type Tx = { txid: string; amount: number; date: number; type: 'Sent' | 'Received'; status: 'Pending' | 'Confirmed'; other: string };
+  type Proxy = { name: string; location: string; initialFee: number; price: number; ip: string; port: number; mine?: boolean };
+
+  const root = document.getElementById('dolphin-demo') as HTMLElement;
+  const main = root.querySelector<HTMLElement>('.dds-main')!;
+  const layer = root.querySelector<HTMLElement>('.dds-layer')!;
+  const dialog = root.querySelector<HTMLElement>('.dds-dialog')!;
+
+  // --- helpers ---------------------------------------------------------------
+
+  const esc = (s: string) =>
+    s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+  const randHex = (n: number) =>
+    [...crypto.getRandomValues(new Uint8Array(n / 2))].map((b) => b.toString(16).padStart(2, '0')).join('');
+  const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  const randB58 = (n: number) => [...crypto.getRandomValues(new Uint8Array(n))].map((b) => B58[b % 58]).join('');
+  const peerId = () => `12D3KooW${randB58(44)}`;
+  const address = () => `S${randB58(33)}`; // simnet addresses start with S
+
+  async function sha256(blob: Blob) {
+    const buf = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
+    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  const icon = {
+    search:
+      '<svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"/></svg>',
+    upload: '<svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5zm0-10h4v6h6v-6h4l-7-7z"/></svg>',
+    close:
+      '<svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>',
+    copy: '<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2m0 16H8V7h11z"/></svg>',
+    router:
+      '<svg viewBox="0 0 24 24"><path d="M20.2 5.9l.8-.8C19.6 3.7 17.8 3 16 3s-3.6.7-5 2.1l.8.8C13 4.8 14.5 4.2 16 4.2s3 .6 4.2 1.7m-.9.8c-.9-.9-2.1-1.4-3.3-1.4s-2.4.5-3.3 1.4l.8.8c.7-.7 1.6-1 2.5-1s1.8.3 2.5 1zM19 13h-2V9h-2v4H5c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-4c0-1.1-.9-2-2-2M8 18H6v-2h2zm3.5 0h-2v-2h2zm3.5 0h-2v-2h2z"/></svg>',
+  };
+
+  // --- state (stand-ins for MongoDB, the DHT and btcwallet) ------------------
+
+  const ME = 'Me';
+  const myAddress = address();
+  const network = new Map<string, NetFile>(); // hash -> file and its providers
+  const peerWallets = new Map<string, string>();
+  const myFiles: Row[] = [];
+  const minedBlocks: string[] = [];
+  const transactions: Tx[] = [];
+
+  const state = {
+    page: 'home',
+    dark: false,
+    balance: 500,
+    filesSearch: '',
+    exploreQuery: '',
+    exploreRows: [] as { id: string; cost: number }[],
+    upload: { file: null as File | null, price: '' },
+    profileTab: 'All' as 'All' | 'Sent' | 'Received',
+    profileSearch: '',
+    sort: { key: 'date', dir: 'desc' as 'asc' | 'desc' },
+    isProxy: false,
+    currentProxy: null as Proxy | null,
+    pendingProxy: null as Proxy | null,
+  };
+
+  const proxies: Proxy[] = [
+    { name: 'Orca Relay', location: 'New York, US', initialFee: 2, price: 0.5, ip: '34.201.18.77', port: 50000 },
+    { name: 'Blue Lagoon', location: 'Toronto, CA', initialFee: 1, price: 0.8, ip: '52.60.143.9', port: 50000 },
+    { name: 'Coral Node', location: 'London, UK', initialFee: 3, price: 0.4, ip: '18.169.40.212', port: 50000 },
+    { name: 'Tidewater', location: 'Seoul, KR', initialFee: 0.5, price: 1.2, ip: '3.38.95.120', port: 50000 },
+    { name: 'Reef Gate', location: 'Frankfurt, DE', initialFee: 2.5, price: 0.6, ip: '35.157.21.64', port: 50000 },
+    { name: 'Pod Hub', location: 'São Paulo, BR', initialFee: 1.5, price: 0.9, ip: '54.233.7.188', port: 50000 },
+  ];
+
+
+  async function provide(peer: string, filename: string, text: string, cost: number) {
+    const blob = new Blob([text], { type: 'text/plain' });
+    const hash = await sha256(blob);
+    const entry = network.get(hash) ?? { filename, blob, providers: new Map() };
+    entry.providers.set(peer, cost);
+    network.set(hash, entry);
+    if (!peerWallets.has(peer)) peerWallets.set(peer, address());
+  }
+
+  // --- dialogs ---------------------------------------------------------------
+
+  function openDialog(html: string) {
+    dialog.innerHTML = html;
+    layer.hidden = false;
+    dialog.querySelector<HTMLElement>('input, button.dds-btn')?.focus();
+  }
+
+  function closeDialog() {
+    layer.hidden = true;
+    dialog.innerHTML = '';
+  }
+
+  const message = (title: string, text: string, danger = false) =>
+    openDialog(`
+      <h6>${title}</h6>
+      <p class="${danger ? 'dds-red' : ''}">${text}</p>
+      <div class="dds-actions"><button type="button" class="dds-btn" data-act="close">${danger ? 'Close' : 'OK'}</button></div>`);
+
+  // --- pages -----------------------------------------------------------------
+
+  function homePage() {
+    // The last ten transactions, oldest first, like the chart in Home.jsx
+    const history = [...transactions].sort((a, b) => a.date - b.date);
+    const recent = history.slice(-10);
+    const first = history.length - recent.length;
+    const chartPrices = recent.map((t) => t.amount);
+    const w = 520;
+    const h = 190;
+    const pad = { l: 46, r: 12, t: 34, b: 34 };
+    const max = Math.max(2.5, Math.ceil(Math.max(...chartPrices) * 2) / 2);
+    const x = (i: number) => pad.l + (i * (w - pad.l - pad.r)) / (chartPrices.length - 1);
+    const y = (v: number) => h - pad.b - (v / max) * (h - pad.t - pad.b);
+    const line = chartPrices.map((v, i) => `${i ? 'L' : 'M'}${x(i)},${y(v)}`).join(' ');
+    const area = `${line} L${x(chartPrices.length - 1)},${y(0)} L${x(0)},${y(0)} Z`;
+    const ticks = Array.from({ length: 6 }, (_, i) => Math.round((max / 5) * i * 10) / 10);
+
+    return `
+      <h3 class="dds-welcome">Welcome to Dolphin Data Sharing!</h3>
+      <div class="dds-home-row">
+        <div class="dds-box dds-chart">
+          <svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Dolphin Coin transactions over time">
+            <text x="${w / 2}" y="16" class="dds-chart-title">Dolphin Coin Transactions Over Time</text>
+            ${ticks.map((t) => `<line x1="${pad.l}" x2="${w - pad.r}" y1="${y(t)}" y2="${y(t)}" class="dds-grid"/><text x="${pad.l - 6}" y="${y(t) + 3}" class="dds-tick" text-anchor="end">${t}</text>`).join('')}
+            ${chartPrices.map((_, i) => `<text x="${x(i)}" y="${h - pad.b + 14}" class="dds-tick" text-anchor="middle">${first + i + 1}</text>`).join('')}
+            <path d="${area}" fill="rgba(75,192,192,0.2)"/>
+            <path d="${line}" fill="none" stroke="rgba(75,192,192,1)" stroke-width="2"/>
+            ${chartPrices.map((v, i) => `<circle cx="${x(i)}" cy="${y(v)}" r="3.5" fill="rgba(75,192,192,0.2)" stroke="rgba(75,192,192,1)" stroke-width="2"/>`).join('')}
+            <text x="${(w + pad.l) / 2}" y="${h - 4}" class="dds-axis" text-anchor="middle">Transaction Number</text>
+            <text transform="translate(11 ${(h - pad.b + pad.t) / 2}) rotate(-90)" class="dds-axis" text-anchor="middle">Price (DolphinCoin)</text>
+          </svg>
+        </div>
+        <div class="dds-box dds-mine">
+          <img src="/images/dolphin-logo.png" alt="" width="84" height="65" />
+          <h4>Start Mining</h4>
+          <button type="button" class="dds-btn dds-btn-big" data-act="mine">Mine Dolphin Coin!</button>
+        </div>
+      </div>
+      <div class="dds-box dds-blocks">
+        <h5>Mined Blocks</h5>
+        ${
+          minedBlocks.length
+            ? `<div class="dds-table-scroll short"><table class="dds-table"><thead><tr><th>Block Hash</th></tr></thead><tbody>${minedBlocks.map((b) => `<tr><td class="dds-mono">${b}</td></tr>`).join('')}</tbody></table></div>`
+            : '<p>No blocks mined yet.</p>'
+        }
+      </div>`;
+  }
+
+  function filesTable() {
+    const q = state.filesSearch.toLowerCase();
+    const rows = myFiles.filter((r) => r.filename.toLowerCase().includes(q) || r.hash.includes(q));
+    return `
+      <table class="dds-table">
+        <thead><tr><th style="width:22%">File Name</th><th style="width:36%">Hash</th><th style="width:10%">Cost</th><th style="width:20%">Uploaded At</th><th style="width:12%"></th></tr></thead>
+        <tbody>
+          ${
+            rows.length
+              ? rows
+                  .map(
+                    (r) => `<tr>
+                <td>${esc(r.filename)}</td>
+                <td class="dds-mono dds-ellipsis" title="${r.hash}">${r.hash}</td>
+                <td>${r.cost} DC</td>
+                <td>${new Date(r.timestamp).toLocaleString()}</td>
+                <td><button type="button" class="dds-btn dds-btn-red dds-btn-sm" data-act="delete" data-hash="${r.hash}">Delete</button></td>
+              </tr>`
+                  )
+                  .join('')
+              : '<tr class="dds-empty"><td colspan="5">No files uploaded</td></tr>'
+          }
+        </tbody>
+      </table>
+      <div class="dds-foot">Rows per page: 10 &nbsp;&nbsp; ${rows.length ? `1–${Math.min(10, rows.length)} of ${rows.length}` : '0–0 of 0'}</div>`;
+  }
+
+  function filesPage() {
+    return `
+      <div class="dds-toolbar">
+        <label class="dds-field dds-search">${icon.search}<input data-input="files-search" placeholder="Search Files..." value="${esc(state.filesSearch)}" /></label>
+        <button type="button" class="dds-btn" data-act="open-upload">${icon.upload}Upload</button>
+      </div>
+      <p class="dds-red dds-center">*These files still persist even if you delete the files on your computer! Use the delete button instead.</p>
+      <div class="dds-grid-box" data-slot="files-table">${filesTable()}</div>`;
+  }
+
+  function exploreTable() {
+    const rows = [...state.exploreRows].sort((a, b) => a.cost - b.cost);
+    return `
+      <table class="dds-table dds-click">
+        <thead><tr><th>Peer ID</th><th>Cost ↑</th></tr></thead>
+        <tbody>
+          ${
+            rows.length
+              ? rows
+                  .map(
+                    (r) =>
+                      `<tr ${r.id === ME ? 'class="dds-me"' : `data-act="pick-provider" data-peer="${r.id}" tabindex="0"`}><td class="dds-mono">${r.id}</td><td>${r.cost} DC</td></tr>`
+                  )
+                  .join('')
+              : '<tr class="dds-empty"><td colspan="2">No providers found</td></tr>'
+          }
+        </tbody>
+      </table>
+      <div class="dds-foot">Rows per page: 10 &nbsp;&nbsp; ${rows.length ? `1–${rows.length} of ${rows.length}` : '0–0 of 0'}</div>`;
+  }
+
+  function explorePage() {
+    const known = [...network.entries()];
+    return `
+      <div class="dds-toolbar">
+        <label class="dds-field dds-search">${icon.search}<input data-input="explore" placeholder="Search Hash..." value="${esc(state.exploreQuery)}" spellcheck="false" /></label>
+        <div class="dds-balance">Wallet Balance: <span data-out="balance">${state.balance}</span> DC</div>
+      </div>
+      <p class="dds-center">Choose a provider to start a transaction</p>
+      <div class="dds-grid-box" data-slot="explore-table">${exploreTable()}</div>
+      <div class="dds-hint">
+        <span>Demo network — click a hash to search it (press Enter after pasting your own):</span>
+        ${known.map(([h, f]) => `<button type="button" data-act="try-hash" data-hash="${h}"><b>${esc(f.filename)}</b> ${h.slice(0, 16)}…</button>`).join('')}
+      </div>`;
+  }
+
+  function proxyPage() {
+    const list = state.isProxy ? [...proxies, myProxy!] : proxies;
+    const cur = state.currentProxy;
+    return `
+      <div class="dds-proxies">
+        ${list
+          .map(
+            (p, i) => `
+          <div class="dds-proxy">
+            <h6>${esc(p.name)}${p.mine ? ' (you)' : ''}</h6>
+            <p>Location: ${esc(p.location)}</p>
+            <p>Initial Fee: ${p.initialFee} DC</p>
+            <p>Rate: ${p.price} DC/MB</p>
+            <button type="button" class="dds-btn" data-act="select-proxy" data-i="${i}" ${p.mine ? 'disabled' : ''}>Select Proxy</button>
+          </div>`
+          )
+          .join('')}
+      </div>
+      <div class="dds-proxybar ${state.isProxy || cur ? 'on' : ''}">
+        ${
+          cur
+            ? `<button type="button" data-act="disconnect-proxy"><span class="dds-cur">Current Proxy: ${esc(cur.name)} (${cur.price} DC/MB)</span><span class="dds-dis">Disconnect from ${esc(cur.name)}</span></button>`
+            : `${icon.router}<strong>PROXY MODE</strong>
+               <label class="dds-switch"><input type="checkbox" data-act="toggle-proxy" ${state.isProxy ? 'checked' : ''}/><span></span>${state.isProxy ? 'On' : 'Off'}</label>`
+        }
+      </div>`;
+  }
+
+  function txTable() {
+    const q = state.profileSearch.toLowerCase();
+    const { key, dir } = state.sort;
+    const rows = transactions
+      .filter((t) => state.profileTab === 'All' || t.type === state.profileTab)
+      .filter((t) => !q || Object.values(t).some((v) => String(v).toLowerCase().includes(q)))
+      .sort((a, b) => {
+        const av = a[key as keyof Tx];
+        const bv = b[key as keyof Tx];
+        return (av > bv ? 1 : av < bv ? -1 : 0) * (dir === 'asc' ? 1 : -1);
+      });
+    const cols: [string, keyof Tx, number][] = [
+      ['Transaction ID', 'txid', 22],
+      ['Cost', 'amount', 9],
+      ['Time of Transaction', 'date', 20],
+      ['Type', 'type', 10],
+      ['Status', 'status', 12],
+      ['Other Wallet Address', 'other', 27],
+    ];
+    return `
+      <table class="dds-table">
+        <thead><tr>${cols
+          .map(([label, k, w]) => `<th style="width:${w}%"><button type="button" data-act="sort" data-key="${k}">${label}${key === k ? (dir === 'asc' ? ' ↑' : ' ↓') : ''}</button></th>`)
+          .join('')}</tr></thead>
+        <tbody>
+          ${
+            rows.length
+              ? rows
+                  .map(
+                    (t) => `<tr>
+                <td class="dds-mono dds-ellipsis" title="${t.txid}">${t.txid}</td>
+                <td>${t.amount}</td>
+                <td>${new Date(t.date).toLocaleString()}</td>
+                <td>${t.type}</td>
+                <td>${t.status}</td>
+                <td class="dds-mono dds-ellipsis" title="${t.other}">${t.other}</td>
+              </tr>`
+                  )
+                  .join('')
+              : '<tr class="dds-empty"><td colspan="6">No transactions yet</td></tr>'
+          }
+        </tbody>
+      </table>`;
+  }
+
+  function profilePage() {
+    return `
+      <div class="dds-profile-row">
+        <div class="dds-box dds-stat">
+          <h6>Wallet Balance</h6>
+          <span class="dds-big"><span data-out="balance">${state.balance}</span> DC</span>
+        </div>
+        <div class="dds-box dds-stat wide">
+          <h5>Wallet Address</h5>
+          <span class="dds-mono dds-ellipsis">${myAddress}</span>
+          <button type="button" class="dds-icon-btn" data-act="copy" aria-label="Copy address">${icon.copy}</button>
+        </div>
+        <form class="dds-box dds-send wide" data-form="send">
+          <h6>Send Money</h6>
+          <label class="dds-field"><input name="to" placeholder="Recipient Wallet Address" spellcheck="false" /></label>
+          <label class="dds-field"><input name="amount" type="number" min="0" step="any" placeholder="Amount" /></label>
+          <button type="submit" class="dds-btn">Send</button>
+        </form>
+      </div>
+      <div class="dds-box">
+        <div class="dds-toolbar between">
+          <h5>Your Transactions</h5>
+          <button type="button" class="dds-btn" data-act="refresh">Refresh Transactions</button>
+        </div>
+        <div class="dds-tabs">
+          ${(['All', 'Sent', 'Received'] as const)
+            .map((t) => `<button type="button" data-act="tab" data-tab="${t}" class="${state.profileTab === t ? 'on' : ''}">${t}</button>`)
+            .join('')}
+        </div>
+        <label class="dds-field"><input data-input="tx-search" placeholder="Search transactions" value="${esc(state.profileSearch)}" /></label>
+        <div class="dds-table-scroll" data-slot="tx-table">${txTable()}</div>
+      </div>`;
+  }
+
+  function settingsPage() {
+    return `
+      <div class="dds-box dds-settings">
+        <h5>Appearance</h5>
+        <p>Switch the whole app between light and dark themes.</p>
+        <label class="dds-switch"><input type="checkbox" data-act="dark" ${state.dark ? 'checked' : ''}/><span></span>${state.dark ? 'Dark Mode' : 'Light Mode'}</label>
+      </div>
+      <div class="dds-box dds-settings">
+        <h5>Account</h5>
+        <p>The real app also lets you change your wallet password and delete your wallet. Those talk to btcwallet directly, so they’re left out of this demo.</p>
+      </div>`;
+  }
+
+  const pages: Record<string, () => string> = {
+    home: homePage,
+    files: filesPage,
+    explore: explorePage,
+    proxy: proxyPage,
+    profile: profilePage,
+    settings: settingsPage,
+  };
+
+  function render() {
+    root.classList.toggle('dark', state.dark);
+    root.querySelectorAll<HTMLElement>('[data-page]').forEach((b) => b.classList.toggle('on', b.dataset.page === state.page));
+    main.innerHTML = pages[state.page]();
+  }
+
+  const slot = (name: string, html: string) => {
+    const el = main.querySelector(`[data-slot="${name}"]`);
+    if (el) el.innerHTML = html;
+  };
+
+  // --- actions ---------------------------------------------------------------
+
+  let myProxy: Proxy | null = null;
+
+  async function mine() {
+    const btn = main.querySelector<HTMLButtonElement>('[data-act="mine"]');
+    if (btn) btn.disabled = true;
+    await sleep(600);
+    // Home.jsx mines 5 blocks per click via POST /mine {num_blocks: 5}
+    for (let i = 0; i < 5; i++) minedBlocks.unshift(randHex(64));
+    transactions.forEach((t) => (t.status = 'Confirmed'));
+    render();
+    message('Mining', 'Mining started: Mining started successfully');
+  }
+
+  function openUpload() {
+    state.upload = { file: null, price: '' };
+    openDialog(`
+      <h6>Upload File</h6>
+      <button type="button" class="dds-icon-btn dds-x" data-act="close" aria-label="Close">${icon.close}</button>
+      <form data-form="upload">
+        <div class="dds-row">
+          <label class="dds-btn dds-btn-sm dds-choose">Choose File<input type="file" data-input="file" hidden /></label>
+          <label class="dds-field dds-outlined"><span>File Name</span><input data-out="filename" readonly /></label>
+        </div>
+        <label class="dds-field dds-outlined"><span>Set Price</span><input data-input="price" inputmode="decimal" /></label>
+        <div class="dds-actions"><button type="submit" class="dds-btn" data-out="submit" disabled>Submit</button></div>
+      </form>`);
+  }
+
+  async function submitUpload() {
+    const { file, price } = state.upload;
+    if (!file || !price) return;
+    const hash = await sha256(file);
+    closeDialog();
+    // handleFileUpload rejects a file whose hash is already stored
+    if (myFiles.some((r) => r.hash === hash)) return message('Error', `File exists: ${esc(file.name)}`);
+    const cost = Number(price);
+    myFiles.push({ filename: file.name, hash, cost, timestamp: Date.now() });
+    const entry = network.get(hash) ?? { filename: file.name, blob: file, providers: new Map() };
+    entry.providers.set(ME, cost);
+    network.set(hash, entry);
+    render();
+  }
+
+  function searchProviders() {
+    const hash = state.exploreQuery.trim();
+    const entry = network.get(hash);
+    state.exploreRows = entry ? [...entry.providers].map(([id, cost]) => ({ id, cost })) : [];
+    slot('explore-table', exploreTable());
+  }
+
+  async function purchase(peer: string) {
+    const hash = state.exploreQuery.trim();
+    const entry = network.get(hash)!;
+    const cost = entry.providers.get(peer)!;
+    closeDialog();
+    if (!entry.providers.has(peer)) return message('Error', 'Purchase failed: Item not found.', true);
+    if (cost > state.balance) return message('Error', 'Insufficient balance for this purchase.', true);
+
+    // handlePurchase: EXIST -> NAME -> REQUEST, then pay the provider's wallet
+    const url = URL.createObjectURL(entry.blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = entry.filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    state.balance = Math.round((state.balance - cost) * 100) / 100;
+    transactions.push({ txid: randHex(64), amount: cost, date: Date.now(), type: 'Sent', status: 'Pending', other: peerWallets.get(peer)! });
+    render();
+    message('Purchase complete', `Downloaded <b>${esc(entry.filename)}</b> and sent ${cost} DC to the provider. Mine blocks on the Home page to confirm the transaction.`);
+  }
+
+  function sendMoney(to: string, amount: number) {
+    if (!/^S[1-9A-HJ-NP-Za-km-z]{25,40}$/.test(to)) return message('Error', 'Invalid recipient wallet address.', true);
+    if (!(amount > 0)) return message('Error', 'Enter an amount greater than 0.', true);
+    if (amount > state.balance) return message('Error', 'Insufficient balance.', true);
+    state.balance = Math.round((state.balance - amount) * 100) / 100;
+    transactions.push({ txid: randHex(64), amount, date: Date.now(), type: 'Sent', status: 'Pending', other: to });
+    render();
+    message('Success', `Sent ${amount} DC.`);
+  }
+
+  // --- events ----------------------------------------------------------------
+
+  root.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    const page = t.closest<HTMLElement>('[data-page]')?.dataset.page;
+    if (page) {
+      state.page = page;
+      return render();
+    }
+    if (t === layer) return closeDialog();
+    const el = t.closest<HTMLElement>('[data-act]');
+    if (!el) return;
+    const d = el.dataset;
+
+    switch (d.act) {
+      case 'close':
+        closeDialog();
+        break;
+      case 'mine':
+        mine();
+        break;
+      case 'open-upload':
+        openUpload();
+        break;
+      case 'delete': {
+        const row = myFiles.find((r) => r.hash === d.hash)!;
+        openDialog(`
+          <h6>Confirm Deletion</h6>
+          <p>Are you sure you want to delete the file <strong>${esc(row.filename)}</strong>? This action cannot be undone.</p>
+          <div class="dds-actions"><button type="button" class="dds-text-btn" data-act="close">Cancel</button><button type="button" class="dds-text-btn dds-red" data-act="confirm-delete" data-hash="${row.hash}">Delete</button></div>`);
+        break;
+      }
+      case 'confirm-delete': {
+        const i = myFiles.findIndex((r) => r.hash === d.hash);
+        if (i >= 0) myFiles.splice(i, 1);
+        network.get(d.hash!)?.providers.delete(ME);
+        closeDialog();
+        render();
+        break;
+      }
+      case 'try-hash':
+        state.exploreQuery = d.hash!;
+        main.querySelector<HTMLInputElement>('[data-input="explore"]')!.value = d.hash!;
+        searchProviders();
+        break;
+      case 'pick-provider': {
+        const cost = network.get(state.exploreQuery.trim())?.providers.get(d.peer!);
+        openDialog(`
+          <h6 class="dds-center">Confirm Purchase</h6>
+          <p class="dds-center">Price: ${cost} DC</p>
+          <div class="dds-actions center"><button type="button" class="dds-btn dds-btn-red" data-act="close">Cancel</button><button type="button" class="dds-btn" data-act="purchase" data-peer="${d.peer}">Purchase</button></div>`);
+        break;
+      }
+      case 'purchase':
+        purchase(d.peer!);
+        break;
+      case 'select-proxy': {
+        const p = (state.isProxy ? [...proxies, myProxy!] : proxies)[Number(d.i)];
+        if (state.currentProxy) {
+          openDialog(`
+            <h6 class="dds-center">Already connected to a proxy</h6>
+            <p class="dds-red">Error: You cannot connect to multiple proxies. Please disconnect from the current one to proceed.</p>
+            <div class="dds-actions"><button type="button" class="dds-btn dds-full" data-act="close">OK</button></div>`);
+        } else if (state.isProxy) {
+          state.pendingProxy = p;
+          openDialog(`
+            <h6 class="dds-center">Use ${esc(p.name)} as a proxy</h6>
+            <p class="dds-red">Warning: You cannot connect to a proxy while being a proxy. You will be disabled as a proxy if you proceed.</p>
+            <div class="dds-actions"><button type="button" class="dds-btn dds-full" data-act="confirm-proxy">Confirm</button><button type="button" class="dds-btn dds-full" data-act="close">Cancel</button></div>`);
+        } else {
+          state.pendingProxy = p;
+          connectProxy();
+        }
+        break;
+      }
+      case 'confirm-proxy':
+        state.isProxy = false;
+        myProxy = null;
+        connectProxy();
+        break;
+      case 'disable-proxy':
+        state.isProxy = false;
+        myProxy = null;
+        closeDialog();
+        render();
+        break;
+      case 'proxy-done':
+        closeDialog();
+        render();
+        break;
+      case 'disconnect-proxy': {
+        const cur = state.currentProxy!;
+        openDialog(`
+          <h6 class="dds-center">Disconnect from ${esc(cur.name)}</h6>
+          <div class="dds-actions"><button type="button" class="dds-btn dds-full" data-act="confirm-disconnect">Confirm</button><button type="button" class="dds-btn dds-full" data-act="close">Cancel</button></div>`);
+        break;
+      }
+      case 'confirm-disconnect': {
+        const cur = state.currentProxy!;
+        state.currentProxy = null;
+        openDialog(`
+          <h6 class="dds-center">Disconnect from ${esc(cur.name)}</h6>
+          <p class="dds-red dds-center">Please disconnect via your device's proxy settings.</p>
+          <div class="dds-actions"><button type="button" class="dds-btn dds-full" data-act="proxy-done">Done</button></div>`);
+        break;
+      }
+      case 'tab':
+        state.profileTab = d.tab as typeof state.profileTab;
+        render();
+        break;
+      case 'sort':
+        state.sort = { key: d.key!, dir: state.sort.key === d.key && state.sort.dir === 'asc' ? 'desc' : 'asc' };
+        slot('tx-table', txTable());
+        break;
+      case 'refresh':
+        slot('tx-table', txTable());
+        break;
+      case 'copy':
+        navigator.clipboard?.writeText(myAddress).catch(() => {});
+        message('Copied', 'Wallet address copied to clipboard.');
+        break;
+    }
+  });
+
+  function connectProxy() {
+    const p = state.pendingProxy!;
+    state.currentProxy = p;
+    openDialog(`
+      <h6 class="dds-center">Set up ${esc(p.name)} as your proxy</h6>
+      <p class="dds-red dds-center">To connect to your proxy, configure your device's proxy settings:<br/>IP: ${p.ip}<br/>PORT: ${p.port}</p>
+      <div class="dds-actions"><button type="button" class="dds-btn dds-full" data-act="proxy-done">Done</button></div>`);
+  }
+
+  root.addEventListener('change', (e) => {
+    const t = e.target as HTMLInputElement;
+    if (t.dataset.act === 'dark') {
+      state.dark = t.checked;
+      render();
+    }
+    if (t.dataset.act === 'toggle-proxy') {
+      t.checked = state.isProxy; // the dialog decides
+      if (state.isProxy) {
+        openDialog(`
+          <h6 class="dds-center">Disable proxy mode</h6>
+          <div class="dds-actions"><button type="button" class="dds-btn dds-full" data-act="disable-proxy">Confirm</button><button type="button" class="dds-btn dds-full" data-act="close">Cancel</button></div>`);
+      } else {
+        openDialog(`
+          <h6>Become a proxy</h6>
+          <button type="button" class="dds-icon-btn dds-x" data-act="close" aria-label="Close">${icon.close}</button>
+          <form data-form="proxy">
+            <label class="dds-field dds-outlined"><span>Name</span><input name="name" required /></label>
+            <label class="dds-field dds-outlined"><span>Initial Fee (DC)</span><input name="fee" inputmode="decimal" /></label>
+            <label class="dds-field dds-outlined"><span>Price (DC/MB)</span><input name="price" inputmode="decimal" /></label>
+            <p class="dds-red" data-out="proxy-error"></p>
+            <div class="dds-actions"><button type="submit" class="dds-btn">Confirm</button></div>
+          </form>`);
+      }
+    }
+    if (t.dataset.input === 'file') {
+      const file = t.files?.[0] ?? null;
+      state.upload.file = file;
+      dialog.querySelector<HTMLInputElement>('[data-out="filename"]')!.value = file?.name ?? '';
+      dialog.querySelector<HTMLButtonElement>('[data-out="submit"]')!.disabled = !file;
+    }
+  });
+
+  root.addEventListener('input', (e) => {
+    const t = e.target as HTMLInputElement;
+    switch (t.dataset.input) {
+      case 'files-search':
+        state.filesSearch = t.value;
+        slot('files-table', filesTable());
+        break;
+      case 'explore':
+        state.exploreQuery = t.value;
+        break;
+      case 'tx-search':
+        state.profileSearch = t.value;
+        slot('tx-table', txTable());
+        break;
+      case 'price':
+        // Files.jsx only accepts digits with an optional decimal point
+        if (/^\d*\.?\d*$/.test(t.value)) state.upload.price = t.value;
+        else t.value = state.upload.price;
+        break;
+    }
+  });
+
+  root.addEventListener('keydown', (e) => {
+    const t = e.target as HTMLElement;
+    if (e.key === 'Enter' && (t as HTMLInputElement).dataset?.input === 'explore') searchProviders();
+    if ((e.key === 'Enter' || e.key === ' ') && t.dataset?.act === 'pick-provider') {
+      e.preventDefault();
+      t.click();
+    }
+  });
+
+  root.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const f = Object.fromEntries(new FormData(form)) as Record<string, string>;
+    if (form.dataset.form === 'upload') submitUpload();
+    if (form.dataset.form === 'send') sendMoney(f.to.trim(), Number(f.amount));
+    if (form.dataset.form === 'proxy') {
+      const fee = Number(f.fee);
+      const price = Number(f.price);
+      if (!f.fee || !f.price || isNaN(fee) || isNaN(price) || fee < 0 || price < 0) {
+        dialog.querySelector('[data-out="proxy-error"]')!.textContent = 'Error: Invalid Fee or Price!';
+        return;
+      }
+      myProxy = { name: f.name.trim() || 'My Proxy', location: 'Stony Brook, US', initialFee: fee, price, ip: '127.0.0.1', port: 50000, mine: true };
+      state.isProxy = true;
+      closeDialog();
+      render();
+    }
+  });
+
+  // --- example data and live activity ----------------------------------------
+
+  const HOUR = 3600e3;
+  const others: string[] = [];
+
+  async function myUpload(filename: string, text: string, cost: number, hoursAgo: number) {
+    const blob = new Blob([text], { type: 'text/plain' });
+    const hash = await sha256(blob);
+    myFiles.push({ filename, hash, cost, timestamp: Date.now() - hoursAgo * HOUR });
+    const entry = network.get(hash) ?? { filename, blob, providers: new Map() };
+    entry.providers.set(ME, cost);
+    network.set(hash, entry);
+  }
+
+  const tx = (type: Tx['type'], amount: number, hoursAgo: number, other: string, status: Tx['status'] = 'Confirmed') =>
+    transactions.push({ txid: randHex(64), amount, date: Date.now() - hoursAgo * HOUR, type, status, other });
+
+  const pick = <T,>(list: T[]) => list[Math.floor(Math.random() * list.length)];
+  const roundHalf = (n: number) => Math.round(n * 2) / 2;
+
+  let toastTimer = 0;
+  function toast(text: string) {
+    const el = root.querySelector<HTMLElement>('.dds-toast')!;
+    el.textContent = text;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => el.classList.remove('show'), 3500);
+  }
+
+  // Refresh what's on screen without wiping inputs the visitor may be typing in.
+  function refreshLive() {
+    root.querySelectorAll('[data-out="balance"]').forEach((el) => (el.textContent = String(state.balance)));
+    if (state.page === 'home') render();
+    if (state.page === 'files') slot('files-table', filesTable());
+    if (state.page === 'profile') slot('tx-table', txTable());
+    if (state.page === 'explore' && state.exploreRows.length) {
+      const entry = network.get(state.exploreQuery.trim());
+      state.exploreRows = entry ? [...entry.providers].map(([id, cost]) => ({ id, cost })) : [];
+      slot('explore-table', exploreTable());
+    }
+  }
+
+  function tick() {
+    if (Math.random() < 0.55 && myFiles.length) {
+      // Another peer buys one of your files and pays you
+      const file = pick(myFiles);
+      const buyer = pick(others);
+      tx('Received', file.cost, 0, peerWallets.get(buyer)!, 'Pending');
+      state.balance = Math.round((state.balance + file.cost) * 100) / 100;
+      toast(`A peer bought ${file.filename}: +${file.cost} DC`);
+    } else {
+      // A provider reprices a file on the network
+      const offers = [...network.values()].flatMap((f) =>
+        [...f.providers.keys()].filter((p) => p !== ME).map((p) => ({ f, p }))
+      );
+      const { f, p } = pick(offers);
+      const old = f.providers.get(p)!;
+      const next = Math.max(0.5, roundHalf(old + pick([-1, -0.5, 0.5, 1])));
+      f.providers.set(p, next);
+      toast(`${f.filename}: a provider changed its price ${old} → ${next} DC`);
+    }
+    refreshLive();
+  }
+
+  let liveTimer = 0;
+  const schedule = () => (liveTimer = window.setTimeout(() => (tick(), schedule()), 5000 + Math.random() * 4000));
+
+  window.addEventListener('project-open', (e) => {
+    if ((e as CustomEvent).detail.id === 'dolphin') schedule();
+  });
+  window.addEventListener('project-close', () => clearTimeout(liveTimer));
+
+  // Seed the demo network, your shared files and your wallet history.
+  (async () => {
+    const pB = peerId();
+    const pC = peerId();
+    const pD = peerId();
+    const pE = peerId();
+    others.push(pB, pC, pD, pE);
+    const facts = 'Dolphins sleep with one half of their brain at a time.\nBottlenose dolphins have signature whistles that work like names.\n';
+    const notes = 'DHT: key -> providers. CIDv1 over sha2-256. Kademlia routing.\n';
+    await provide(pB, 'dolphin-facts.txt', facts, 3);
+    await provide(pC, 'dolphin-facts.txt', facts, 5);
+    await provide(pD, 'cse416-notes.txt', notes, 2);
+    await provide(pC, 'ocean-playlist.txt', '1. Octopus’s Garden\n2. Waves\n3. Under the Sea\n', 1.5);
+    await provide(pE, 'btcd-simnet-setup.txt', 'btcd --simnet --miningaddr=<addr>\nbtcwallet --simnet\n', 2.5);
+
+    // One of your files overlaps with Peer D, so Explore lists "Me" as a provider too
+    await myUpload('cse416-notes.txt', notes, 2.5, 50);
+    await myUpload('project-report.txt', 'Dolphin Data Sharing final report\nArchitecture, DHT design, wallet integration.\n', 4, 30);
+    await myUpload('orca-sounds.txt', 'Clicks: echolocation. Whistles: social. Pulsed calls: pod dialects.\n', 1.5, 6);
+
+    const w = (p: string) => peerWallets.get(p)!;
+    tx('Received', 25, 120, address());
+    tx('Sent', 3, 96, w(pB));
+    tx('Received', 2.5, 72, w(pD));
+    tx('Sent', 1.5, 60, w(pC));
+    tx('Received', 4, 44, w(pE));
+    tx('Received', 1.5, 26, w(pB));
+    tx('Sent', 2.5, 20, w(pE));
+    tx('Received', 4, 9, w(pC));
+    tx('Sent', 5, 3, w(pC), 'Pending');
+    tx('Received', 2.5, 1, w(pD), 'Pending');
+    for (let i = 0; i < 3; i++) minedBlocks.push(randHex(64));
+    state.balance = 527.5;
+    render();
+  })();
+</script>
+
+<style is:global>
+  .dds {
+    --dds-bg: #ffffff;
+    --dds-paper: #ffffff;
+    --dds-head: #f0f0f0;
+    --dds-text: #000000;
+    --dds-muted: rgba(0, 0, 0, 0.6);
+    --dds-border: rgba(0, 0, 0, 0.18);
+    --dds-blue: #7a99d9;
+    --dds-teal: #b2dfdb;
+    position: relative;
+    display: grid;
+    grid-template-columns: 132px 1fr;
+    height: 640px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    overflow: hidden;
+    background: var(--dds-bg);
+    color: var(--dds-text);
+    font-family: 'Bitter', Helvetica, Arial, sans-serif;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .dds.dark {
+    --dds-bg: #18191e;
+    --dds-paper: #333333;
+    --dds-head: #333333;
+    --dds-text: #ffffff;
+    --dds-muted: rgba(255, 255, 255, 0.7);
+    --dds-border: rgba(255, 255, 255, 0.2);
+  }
+
+  .dds button,
+  .dds input {
+    font: inherit;
+    color: inherit;
+  }
+
+  .dds svg {
+    width: 1.25em;
+    height: 1.25em;
+    fill: currentColor;
+    flex: none;
+  }
+
+  .dds h3,
+  .dds h4,
+  .dds h5,
+  .dds h6 {
+    margin: 0;
+    font-family: inherit;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  .dds h5 {
+    font-size: 1.35rem;
+  }
+
+  .dds h6 {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  /* Sidebar (Nav.jsx) */
+  .dds-nav {
+    display: flex;
+    flex-direction: column;
+    background: #000;
+    color: #fff;
+  }
+
+  .dds-nav img {
+    width: 84px;
+    height: auto;
+    margin: 1rem auto;
+  }
+
+  .dds-nav-top {
+    flex: 1;
+  }
+
+  .dds-nav button {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    height: 56px;
+    padding: 0 1rem;
+    border: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    background: transparent;
+    color: #fff;
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+
+  .dds-nav button svg {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+
+  .dds-nav-bottom button {
+    height: 48px;
+    font-size: 0.7rem;
+  }
+
+  .dds-nav button:hover,
+  .dds-nav button.on {
+    background: var(--dds-blue);
+  }
+
+  .dds-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+    padding: 1.25rem;
+    overflow-y: auto;
+  }
+
+  /* Shared bits */
+  .dds-box {
+    padding: 1rem;
+    border: 2px solid var(--dds-teal);
+    border-radius: 12px;
+    background: var(--dds-paper);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .dds-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.45rem 1rem;
+    border: 0;
+    border-radius: 4px;
+    background: #000;
+    color: #fff !important;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.14);
+    transition: background-color 0.2s ease;
+  }
+
+  .dds.dark .dds-btn {
+    background: #4a4a4a;
+  }
+
+  .dds-btn:hover {
+    background: var(--dds-blue) !important;
+  }
+
+  .dds-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+    background: #000 !important;
+  }
+
+  .dds-btn-red {
+    background: red !important;
+  }
+
+  .dds-btn-red:hover {
+    background: #b83127 !important;
+  }
+
+  .dds-btn-sm {
+    padding: 0.25rem 0.7rem;
+    font-size: 0.78rem;
+  }
+
+  .dds-btn-big {
+    width: 200px;
+    height: 64px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+  }
+
+  .dds-full {
+    flex: 1;
+  }
+
+  .dds-text-btn {
+    padding: 0.4rem 0.75rem;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    font-weight: 600;
+    text-transform: none;
+    cursor: pointer;
+  }
+
+  .dds-icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .dds-icon-btn:hover {
+    background: rgba(0, 0, 0, 0.06);
+  }
+
+  .dds-red {
+    color: red !important;
+  }
+
+  .dds.dark .dds-red {
+    color: #ff4444 !important;
+  }
+
+  .dds-center {
+    text-align: center;
+  }
+
+  .dds-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.78rem;
+  }
+
+  .dds-ellipsis {
+    max-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dds-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .dds-toolbar.between {
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .dds-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.75rem;
+    border: 1px solid var(--dds-border);
+    border-radius: 4px;
+    background: var(--dds-paper);
+  }
+
+  .dds-field:focus-within {
+    border-color: var(--dds-blue);
+    box-shadow: inset 0 0 0 1px var(--dds-blue);
+  }
+
+  .dds-field input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.7rem 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+  }
+
+  .dds-search {
+    flex: 1;
+  }
+
+  .dds-outlined {
+    position: relative;
+    flex: 1;
+    margin-top: 0.6rem;
+  }
+
+  .dds-outlined span {
+    position: absolute;
+    top: -0.6rem;
+    left: 0.5rem;
+    padding: 0 0.3rem;
+    background: var(--dds-paper);
+    font-size: 0.72rem;
+    color: var(--dds-muted);
+  }
+
+  /* Tables (MUI DataGrid / Table look) */
+  .dds-grid-box,
+  .dds-table-scroll {
+    border: 1px solid var(--dds-border);
+    border-radius: 8px;
+    overflow-x: auto;
+    background: var(--dds-paper);
+  }
+
+  .dds-table-scroll.short {
+    max-height: 180px;
+    overflow-y: auto;
+  }
+
+  .dds-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    min-width: 520px;
+  }
+
+  .dds-table th,
+  .dds-table td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--dds-border);
+    text-align: left;
+  }
+
+  .dds-table th {
+    position: sticky;
+    top: 0;
+    background: var(--dds-head);
+    font-weight: 600;
+  }
+
+  .dds-table th button {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .dds-click tbody tr[data-act] {
+    cursor: pointer;
+  }
+
+  .dds-click tbody tr[data-act]:hover,
+  .dds-click tbody tr[data-act]:focus-visible {
+    background: rgba(122, 153, 217, 0.15);
+    outline: none;
+  }
+
+  .dds-me td {
+    color: var(--dds-muted);
+  }
+
+  .dds-empty td {
+    padding: 2.5rem;
+    text-align: center;
+    color: gray;
+  }
+
+  .dds-foot {
+    padding: 0.5rem 0.75rem;
+    text-align: right;
+    font-size: 0.78rem;
+    color: var(--dds-muted);
+  }
+
+  /* Home */
+  .dds-welcome {
+    margin-top: 0.5rem !important;
+    font-size: clamp(1.4rem, 3vw, 2.1rem) !important;
+    text-align: center;
+  }
+
+  .dds-home-row {
+    display: grid;
+    grid-template-columns: 60fr 35fr;
+    gap: 1.25rem;
+  }
+
+  .dds-chart svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .dds-chart text {
+    fill: var(--dds-text);
+    font-family: inherit;
+  }
+
+  .dds-chart-title {
+    font-size: 15px;
+    text-anchor: middle;
+    font-weight: 600;
+  }
+
+  .dds-tick {
+    font-size: 9px;
+    opacity: 0.7;
+  }
+
+  .dds-axis {
+    font-size: 10px;
+  }
+
+  .dds-chart .dds-grid {
+    stroke: var(--dds-border);
+  }
+
+  .dds-mine {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .dds-mine h4 {
+    font-size: 1.6rem;
+  }
+
+  .dds-blocks {
+    width: 80%;
+    align-self: center;
+  }
+
+  .dds-blocks h5 {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Explore */
+  .dds-balance {
+    display: grid;
+    place-items: center;
+    width: 30%;
+    min-width: 11rem;
+    padding: 0.5rem;
+    border: 1px solid var(--dds-text);
+    font-size: 1.15rem;
+    text-align: center;
+  }
+
+  .dds-hint {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding: 0.75rem;
+    border: 1px dashed var(--dds-border);
+    border-radius: 8px;
+    font-size: 0.78rem;
+    color: var(--dds-muted);
+  }
+
+  .dds-hint span {
+    flex-basis: 100%;
+  }
+
+  .dds-hint button {
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--dds-border);
+    border-radius: 999px;
+    background: var(--dds-paper);
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    cursor: pointer;
+  }
+
+  .dds-hint b {
+    font-family: 'Bitter', serif;
+  }
+
+  /* Proxy */
+  .dds-proxies {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 1rem;
+    padding: 1rem 0.25rem;
+    border-block: 1px solid var(--dds-text);
+    max-height: 430px;
+    overflow-y: auto;
+  }
+
+  .dds-proxy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 1rem;
+    border-radius: 8px;
+    background: var(--dds-head);
+    box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 5px 8px rgba(0, 0, 0, 0.14);
+    text-align: center;
+    font-size: 0.82rem;
+  }
+
+  .dds-proxy h6 {
+    font-weight: 700;
+  }
+
+  .dds-proxy .dds-btn {
+    margin-top: 0.4rem;
+  }
+
+  .dds-proxybar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 64px;
+    border-radius: 8px;
+    background: red;
+    color: #fff;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2);
+  }
+
+  .dds-proxybar.on {
+    background: green;
+  }
+
+  .dds-proxybar svg {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .dds-proxybar > button {
+    width: 100%;
+    min-height: 64px;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+
+  .dds-proxybar .dds-dis,
+  .dds-proxybar > button:hover .dds-cur,
+  .dds-proxybar > button:focus-visible .dds-cur {
+    display: none;
+  }
+
+  .dds-proxybar > button:hover .dds-dis,
+  .dds-proxybar > button:focus-visible .dds-dis {
+    display: inline;
+  }
+
+  .dds-proxybar:has(> button:hover),
+  .dds-proxybar:has(> button:focus-visible) {
+    background: red;
+  }
+
+  /* MUI-like switch */
+  .dds-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  .dds-switch input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .dds-switch span {
+    position: relative;
+    width: 36px;
+    height: 14px;
+    border-radius: 7px;
+    background: rgba(0, 0, 0, 0.38);
+  }
+
+  .dds-proxybar .dds-switch span {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  .dds-switch span::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fafafa;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+
+  .dds-switch input:checked + span {
+    background: rgba(25, 118, 210, 0.5);
+  }
+
+  .dds-switch input:checked + span::after {
+    transform: translateX(20px);
+    background: #1976d2;
+  }
+
+  .dds-switch input:focus-visible + span {
+    outline: 2px solid var(--dds-blue);
+    outline-offset: 4px;
+  }
+
+  /* Profile */
+  .dds-profile-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 2fr;
+    gap: 1rem;
+  }
+
+  .dds-stat {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 150px;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .dds-stat .dds-ellipsis {
+    max-width: 100%;
+  }
+
+  .dds-big {
+    font-size: 1.8rem;
+  }
+
+  .dds-send {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .dds-send h6 {
+    text-align: center;
+  }
+
+  .dds-send .dds-field input {
+    padding: 0.5rem 0;
+  }
+
+  .dds-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--dds-border);
+  }
+
+  .dds-tabs button {
+    padding: 0.6rem 1.25rem;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: var(--dds-muted);
+    cursor: pointer;
+  }
+
+  .dds-tabs button.on {
+    border-bottom-color: var(--dds-text);
+    color: var(--dds-text);
+  }
+
+  .dds-table-scroll {
+    margin-top: 0.75rem;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+
+  /* Settings */
+  .dds-settings {
+    display: grid;
+    gap: 0.5rem;
+    justify-items: start;
+  }
+
+  .dds-settings p {
+    color: var(--dds-muted);
+  }
+
+  /* Snackbar for live network activity */
+  .dds-toast {
+    position: absolute;
+    left: 148px;
+    bottom: 1rem;
+    z-index: 4;
+    max-width: calc(100% - 170px);
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    background: #323232;
+    color: #fff;
+    font-size: 0.82rem;
+    box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 6px 10px rgba(0, 0, 0, 0.14);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+  }
+
+  .dds-toast.show {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Dialogs (MUI Dialog look) */
+  .dds-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .dds-layer[hidden] {
+    display: none;
+  }
+
+  .dds-dialog {
+    position: relative;
+    display: grid;
+    gap: 0.9rem;
+    width: min(100%, 420px);
+    padding: 1.25rem 1.5rem;
+    border-radius: 4px;
+    background: var(--dds-paper);
+    color: var(--dds-text);
+    box-shadow: 0 11px 15px -7px rgba(0, 0, 0, 0.2), 0 24px 38px 3px rgba(0, 0, 0, 0.14);
+  }
+
+  .dds-dialog h6 {
+    font-size: 1.2rem;
+    font-weight: 500;
+  }
+
+  .dds-dialog p {
+    font-size: 0.875rem;
+    overflow-wrap: anywhere;
+  }
+
+  .dds-dialog form {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .dds-x {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .dds-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .dds-choose {
+    margin-top: 0.6rem;
+    white-space: nowrap;
+  }
+
+  .dds-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  .dds-actions.center {
+    justify-content: center;
+  }
+
+  @media (max-width: 720px) {
+    .dds {
+      grid-template-columns: 56px 1fr;
+      height: 600px;
+    }
+
+    .dds-nav img {
+      width: 40px;
+    }
+
+    .dds-toast {
+      left: 68px;
+      max-width: calc(100% - 80px);
+    }
+
+    .dds-nav button {
+      justify-content: center;
+      padding: 0;
+    }
+
+    .dds-nav button span {
+      display: none;
+    }
+
+    .dds-home-row,
+    .dds-profile-row {
+      grid-template-columns: 1fr;
+    }
+
+    .dds-blocks {
+      width: 100%;
+    }
+
+    .dds-toolbar {
+      flex-wrap: wrap;
+    }
+
+    .dds-balance {
+      width: 100%;
+    }
+  }
+</style>

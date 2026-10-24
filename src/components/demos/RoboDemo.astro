@@ -1,0 +1,129 @@
+---
+interface Props {
+  url: string;
+}
+
+const { url } = Astro.props;
+---
+
+<div class="robo" id="robo-demo" data-url={url}>
+  <div class="robo-stage">
+    <button type="button" class="robo-play">
+      <span class="robo-icon" aria-hidden="true">▶</span>
+      Load the game
+    </button>
+  </div>
+  <div class="robo-foot">
+    <span>Click inside the game first so it receives your keyboard input.</span>
+    <a href={url} target="_blank" rel="noreferrer">Open in a new tab ↗</a>
+  </div>
+</div>
+
+<script>
+  const root = document.getElementById('robo-demo') as HTMLElement;
+  const stage = root.querySelector<HTMLElement>('.robo-stage')!;
+  const GAME_WIDTH = 1200;
+  const playButton = root.querySelector<HTMLButtonElement>('.robo-play')!;
+  let observer: ResizeObserver | null = null;
+
+  // Load on request rather than when the page opens: the game is heavy and
+  // grabs keyboard focus.
+  playButton.addEventListener('click', () => {
+    const frame = document.createElement('iframe');
+    frame.src = root.dataset.url!;
+    frame.title = 'Robo-Rush game';
+    frame.allow = 'autoplay; fullscreen';
+    stage.replaceChildren(frame);
+    frame.focus();
+
+    // The game draws to a fixed 1200x800 canvas, so render it at that size
+    // and scale it down to fit the stage.
+    const fit = () => (frame.style.transform = `scale(${stage.clientWidth / GAME_WIDTH})`);
+    observer = new ResizeObserver(fit);
+    observer.observe(stage);
+    fit();
+  });
+
+  // Unload the game when the project closes so its music stops.
+  window.addEventListener('project-close', () => {
+    if (!stage.querySelector('iframe')) return;
+    observer?.disconnect();
+    observer = null;
+    stage.replaceChildren(playButton);
+  });
+</script>
+
+<style is:global>
+  .robo {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .robo-stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 3 / 2;
+    border-radius: 20px;
+    overflow: hidden;
+    background:
+      radial-gradient(60% 60% at 30% 30%, rgba(124, 106, 142, 0.55), transparent 70%),
+      radial-gradient(50% 60% at 80% 80%, rgba(63, 155, 98, 0.45), transparent 70%),
+      #1c1a17;
+  }
+
+  .robo-stage iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1200px;
+    height: 800px;
+    border: 0;
+    transform-origin: 0 0;
+    background: #000;
+  }
+
+  .robo-play {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.6rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.4s var(--ease);
+  }
+
+  .robo-play:hover {
+    transform: scale(1.05);
+  }
+
+  .robo-icon {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--surface);
+    font-size: 0.8rem;
+  }
+
+  .robo-foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+  }
+
+  .robo-foot a {
+    font-weight: 600;
+    color: var(--ink);
+  }
+</style>

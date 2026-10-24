@@ -1,0 +1,354 @@
+---
+import { profile } from '../data/content';
+---
+
+<section id="home" class="hero">
+  <div class="hero-bg" aria-hidden="true"></div>
+
+  <div class="container hero-grid">
+    <div class="hero-text">
+      <p class="status load" style="--d: 100ms">
+        <span class="dot"></span>
+        {profile.status}
+      </p>
+
+      <h1 class="name">
+        <span class="line"><span class="load" style="--d: 200ms">{profile.firstName}</span></span>
+        <span class="line"><span class="load italic" style="--d: 320ms">{profile.lastName}</span></span>
+      </h1>
+
+      <p class="role load" style="--d: 480ms">
+        {profile.role} <span class="at">@</span>
+        {profile.company}
+      </p>
+
+      <p class="tagline load" style="--d: 580ms">{profile.tagline}</p>
+
+      <div class="actions load" style="--d: 680ms">
+        <a href="#projects" class="btn btn-primary">View my work <span class="arrow">→</span></a>
+        <a href="#contact" class="btn btn-ghost">Get in touch</a>
+      </div>
+
+      <p class="location load" style="--d: 780ms">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path>
+          <circle cx="12" cy="9.5" r="2.5"></circle>
+        </svg>
+        {profile.location}
+      </p>
+    </div>
+
+    <div class="hero-media">
+      <div class="arch">
+        <img src={profile.photo} alt={`Portrait of ${profile.name}`} width="400" height="400" />
+      </div>
+      <div class="badge">
+        <span class="badge-label">Currently</span>
+        <span class="badge-value">Building agentic AI @ {profile.company}</span>
+      </div>
+      <div class="ring" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <a href="#about" class="scroll-cue" aria-label="Scroll to About">
+    <span>Scroll</span>
+    <span class="cue-line"></span>
+  </a>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    padding: calc(var(--nav-h) + 2rem) 0 5rem;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(60% 50% at 85% 40%, rgba(181, 101, 47, 0.14), transparent 70%),
+      radial-gradient(40% 40% at 10% 90%, rgba(90, 125, 140, 0.1), transparent 70%);
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    align-items: center;
+    gap: clamp(2rem, 6vw, 5rem);
+  }
+
+  /* Entrance animation on page load */
+  .load {
+    display: inline-block;
+    opacity: 0;
+    animation: rise 1.1s var(--ease) forwards;
+    animation-delay: var(--d, 0ms);
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(110%);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  .dot {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #3f9b62;
+  }
+
+  .dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: inherit;
+    animation: pulse 2s ease-out infinite;
+  }
+
+  @keyframes pulse {
+    to {
+      transform: scale(2.8);
+      opacity: 0;
+    }
+  }
+
+  .name {
+    margin-top: 1.5rem;
+    font-size: clamp(3.5rem, 10vw, 7.5rem);
+    line-height: 0.95;
+    font-weight: 350;
+  }
+
+  .name .line {
+    display: block;
+    overflow: hidden;
+    /* Room for descenders (j, y, g) inside the reveal mask; negative margin keeps line spacing tight */
+    padding-bottom: 0.2em;
+    margin-bottom: -0.12em;
+  }
+
+  .italic {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .role {
+    display: block;
+    margin-top: 1.75rem;
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+    font-weight: 600;
+  }
+
+  .at {
+    color: var(--accent);
+  }
+
+  .tagline {
+    display: block;
+    margin-top: 0.75rem;
+    max-width: 34rem;
+    color: var(--ink-soft);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2.25rem;
+  }
+
+  .location {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    font-size: 0.88rem;
+    color: var(--ink-muted);
+  }
+
+  /* Photo */
+  .hero-media {
+    position: relative;
+    justify-self: end;
+    width: 100%;
+    max-width: 440px;
+  }
+
+  .arch {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    border-radius: 999px 999px 24px 24px;
+    overflow: hidden;
+    background: var(--bg-alt);
+    box-shadow: 0 40px 80px -40px rgba(28, 26, 23, 0.45);
+    clip-path: inset(100% 0 0 0 round 999px 999px 24px 24px);
+    animation: unveil 1.4s var(--ease) 0.3s forwards;
+  }
+
+  .arch img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 30%;
+    transform: scale(1.25);
+    animation: settle 1.8s var(--ease) 0.3s forwards;
+  }
+
+  @keyframes unveil {
+    to {
+      clip-path: inset(0 0 0 0 round 999px 999px 24px 24px);
+    }
+  }
+
+  @keyframes settle {
+    to {
+      transform: scale(1);
+    }
+  }
+
+  .ring {
+    position: absolute;
+    inset: -18px -18px auto auto;
+    width: 110px;
+    height: 110px;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    z-index: -1;
+    opacity: 0;
+    animation: fade 1s ease 1.2s forwards, float 7s ease-in-out 1.2s infinite;
+  }
+
+  .badge {
+    position: absolute;
+    left: -2rem;
+    bottom: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.9rem 1.2rem;
+    border-radius: 16px;
+    background: rgba(251, 248, 243, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+    box-shadow: 0 20px 40px -20px rgba(28, 26, 23, 0.35);
+    opacity: 0;
+    animation: fade 1s ease 1.1s forwards, float 6s ease-in-out 1.1s infinite;
+  }
+
+  .badge-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .badge-value {
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
+  @keyframes fade {
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    50% {
+      translate: 0 -10px;
+    }
+  }
+
+  .scroll-cue {
+    position: absolute;
+    left: 50%;
+    bottom: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    translate: -50% 0;
+  }
+
+  .cue-line {
+    position: relative;
+    width: 1px;
+    height: 44px;
+    background: var(--line);
+    overflow: hidden;
+  }
+
+  .cue-line::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--ink);
+    animation: drip 2.2s var(--ease) infinite;
+  }
+
+  @keyframes drip {
+    from {
+      transform: translateY(-100%);
+    }
+    to {
+      transform: translateY(100%);
+    }
+  }
+
+  @media (max-width: 860px) {
+    .hero-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-media {
+      grid-row: 1;
+      justify-self: center;
+      max-width: 300px;
+    }
+
+    .badge {
+      left: -1rem;
+      bottom: 1.5rem;
+    }
+
+    .scroll-cue {
+      display: none;
+    }
+  }
+</style>

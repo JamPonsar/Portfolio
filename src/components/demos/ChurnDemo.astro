@@ -1,0 +1,331 @@
+---
+// Interactive explorer over the real churn dataset. The CSV was pre-aggregated
+// into src/data/churn.json: one row per unique combination of customer traits.
+---
+
+<div class="churn" id="churn-demo">
+  <div class="churn-controls">
+    <span class="churn-label">Compare by</span>
+    <div class="churn-seg" role="group" aria-label="Compare by"></div>
+  </div>
+
+  <div class="churn-filters" aria-label="Filters"></div>
+
+  <div class="churn-summary">
+    <div>
+      <span class="churn-big" data-out="rate">–</span>
+      <span class="churn-sub">churn rate in this selection</span>
+    </div>
+    <div>
+      <span class="churn-big" data-out="count">–</span>
+      <span class="churn-sub">customers</span>
+    </div>
+    <div>
+      <span class="churn-big" data-out="delta">–</span>
+      <span class="churn-sub">vs. the 20.4% overall rate</span>
+    </div>
+  </div>
+
+  <div class="churn-chart" role="img" aria-label="Churn rate by group"></div>
+  <p class="churn-note" aria-live="polite"></p>
+</div>
+
+<script>
+  const root = document.getElementById('churn-demo') as HTMLElement;
+  let started = false;
+
+  window.addEventListener('project-open', (e) => {
+    if ((e as CustomEvent).detail.id === 'churn' && !started) {
+      started = true;
+      start();
+    }
+  });
+
+  async function start() {
+    const data = (await import('../../data/churn.json')).default as {
+      geos: string[];
+      genders: string[];
+      cards: string[];
+      rows: number[][];
+    };
+
+    // Each dimension is a column in a data row.
+    const dims = [
+      { key: 'geo', name: 'Country', col: 0, labels: data.geos },
+      { key: 'age', name: 'Age group', col: 4, labels: ['Under 30', '30–39', '40–49', '50–59', '60+'] },
+      { key: 'active', name: 'Activity', col: 2, labels: ['Inactive member', 'Active member'] },
+      { key: 'complain', name: 'Complaint', col: 3, labels: ['No complaint', 'Filed a complaint'] },
+      { key: 'prod', name: 'Products', col: 5, labels: ['1 product', '2 products', '3 products', '4 products'] },
+      { key: 'card', name: 'Card type', col: 6, labels: data.cards.map((c) => c[0] + c.slice(1).toLowerCase()) },
+      { key: 'gender', name: 'Gender', col: 1, labels: data.genders },
+    ];
+
+    const notes: Record<string, string> = {
+      geo: 'Germany churns at about twice the rate of France and Spain — the biggest geographic red flag.',
+      age: 'Churn peaks at 50–59. Middle-aged customers have the most complex needs and are likely shopping around.',
+      active: 'Inactive members leave at nearly double the rate of active ones — a clear target for re-engagement.',
+      complain: 'Almost everyone who complained left. Complaints behave like an exit signal, so resolution speed matters.',
+      prod: 'Surprise: 3–4 products means more churn, not less. Real banks see the opposite, which hints this dataset is synthetic.',
+      card: 'Card tier barely moves the needle — a useful negative result.',
+      gender: 'Women churn at about 25% versus 16.5% for men — a gap worth a closer look.',
+    };
+
+    let groupBy = dims[0];
+    const filters: Record<string, number | null> = {};
+
+    const seg = root.querySelector('.churn-seg')!;
+    const filterBox = root.querySelector('.churn-filters')!;
+    const chart = root.querySelector('.churn-chart')!;
+    const note = root.querySelector('.churn-note')!;
+    const out = (k: string) => root.querySelector<HTMLElement>(`[data-out="${k}"]`)!;
+
+    dims.forEach((d) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = d.name;
+      b.addEventListener('click', () => {
+        groupBy = d;
+        render();
+      });
+      b.dataset.key = d.key;
+      seg.append(b);
+
+      const wrap = document.createElement('label');
+      wrap.className = 'churn-filter';
+      wrap.innerHTML = `<span>${d.name}</span>`;
+      const sel = document.createElement('select');
+      sel.innerHTML =
+        '<option value="">All</option>' + d.labels.map((l, i) => `<option value="${i}">${l}</option>`).join('');
+      sel.addEventListener('change', () => {
+        filters[d.key] = sel.value === '' ? null : Number(sel.value);
+        render();
+      });
+      wrap.append(sel);
+      filterBox.append(wrap);
+    });
+
+    const reset = document.createElement('button');
+    reset.type = 'button';
+    reset.className = 'churn-reset';
+    reset.textContent = 'Reset filters';
+    reset.addEventListener('click', () => {
+      filterBox.querySelectorAll('select').forEach((s) => (s.value = ''));
+      dims.forEach((d) => (filters[d.key] = null));
+      render();
+    });
+    filterBox.append(reset);
+
+    const OVERALL = 2038 / 10000;
+    const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
+
+    function render() {
+      seg.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.key === groupBy.key));
+
+      const sel = data.rows.filter((r) => dims.every((d) => filters[d.key] == null || r[d.col] === filters[d.key]));
+      let total = 0;
+      let churned = 0;
+      const groups = groupBy.labels.map(() => ({ n: 0, c: 0 }));
+      sel.forEach((r) => {
+        total += r[7];
+        churned += r[8];
+        groups[r[groupBy.col]].n += r[7];
+        groups[r[groupBy.col]].c += r[8];
+      });
+
+      out('count').textContent = total.toLocaleString();
+      out('rate').textContent = total ? pct(churned / total) : '–';
+      const diff = total ? (churned / total - OVERALL) * 100 : 0;
+      out('delta').textContent = total ? `${diff >= 0 ? '+' : '−'}${Math.abs(diff).toFixed(1)} pts` : '–';
+
+      chart.innerHTML = '';
+      groups.forEach((g, i) => {
+        const rate = g.n ? g.c / g.n : 0;
+        const row = document.createElement('div');
+        row.className = 'churn-row';
+        row.innerHTML = `
+          <span class="churn-name">${groupBy.labels[i]}</span>
+          <span class="churn-track"><span class="churn-bar" style="width:0"></span><span class="churn-base" style="left:${OVERALL * 100}%"></span></span>
+          <span class="churn-val">${g.n ? pct(rate) : '–'} <small>${g.n.toLocaleString()} customers</small></span>`;
+        chart.append(row);
+        const bar = row.querySelector<HTMLElement>('.churn-bar')!;
+        bar.classList.toggle('hot', g.n > 0 && rate > OVERALL * 1.5);
+        requestAnimationFrame(() => (bar.style.width = `${rate * 100}%`));
+      });
+
+      note.textContent = notes[groupBy.key];
+    }
+
+    render();
+  }
+</script>
+
+<style is:global>
+  .churn {
+    display: grid;
+    gap: 1.25rem;
+    padding: clamp(1rem, 3vw, 1.75rem);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--surface);
+  }
+
+  .churn-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .churn-label,
+  .churn-filter span {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .churn-seg {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .churn-seg button,
+  .churn-reset {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  }
+
+  .churn-seg button:hover,
+  .churn-reset:hover {
+    border-color: var(--ink);
+  }
+
+  .churn-seg button.on {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--surface);
+  }
+
+  .churn-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem;
+  }
+
+  .churn-filter {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .churn-filter select {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.85rem;
+  }
+
+  .churn-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    padding: 1rem 0;
+    border-block: 1px solid var(--line);
+  }
+
+  .churn-big {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    line-height: 1.1;
+  }
+
+  .churn-sub {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+  }
+
+  .churn-chart {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .churn-row {
+    display: grid;
+    grid-template-columns: 8.5rem 1fr 9rem;
+    align-items: center;
+    gap: 0.9rem;
+    font-size: 0.9rem;
+  }
+
+  .churn-name {
+    font-weight: 600;
+  }
+
+  .churn-track {
+    position: relative;
+    height: 22px;
+    border-radius: 6px;
+    background: var(--bg);
+  }
+
+  .churn-bar {
+    display: block;
+    height: 100%;
+    border-radius: 6px;
+    background: #5a7d8c;
+    transition: width 0.7s var(--ease);
+  }
+
+  .churn-bar.hot {
+    background: var(--accent);
+  }
+
+  /* Dashed marker at the overall churn rate */
+  .churn-base {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    border-left: 2px dashed var(--ink-muted);
+  }
+
+  .churn-val {
+    font-weight: 700;
+  }
+
+  .churn-val small {
+    display: block;
+    font-weight: 400;
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+  }
+
+  .churn-note {
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 600px) {
+    .churn-row {
+      grid-template-columns: 1fr 6.5rem;
+    }
+
+    .churn-track {
+      grid-column: 1 / -1;
+      order: 3;
+    }
+  }
+</style>

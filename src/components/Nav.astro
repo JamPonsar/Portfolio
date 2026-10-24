@@ -1,0 +1,341 @@
+---
+import { navLinks, profile } from '../data/content';
+---
+
+<header class="nav" id="nav">
+  <div class="nav-inner container">
+    <a href="#home" class="brand" aria-label="Back to top">
+      <span class="brand-mark">JP</span>
+      <span class="brand-name">{profile.name}</span>
+    </a>
+
+    <nav aria-label="Primary">
+      <ul class="links">
+        {
+          navLinks.map((link) => (
+            <li>
+              <a href={`#${link.id}`} class="link" data-nav-link={link.id}>
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <a href="#contact" class="nav-cta">Let’s talk</a>
+
+    <button class="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+  <div class="progress" aria-hidden="true"></div>
+</header>
+
+<div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+  <ul>
+    {
+      navLinks.map((link, i) => (
+        <li style={`--i: ${i}`}>
+          <a href={`#${link.id}`} data-mobile-link>
+            <span class="num">0{i + 1}</span>
+            {link.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .nav {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 50;
+    height: var(--nav-h);
+    color: var(--ink);
+    background: transparent;
+    transition:
+      background-color 0.5s var(--ease),
+      color 0.5s var(--ease),
+      box-shadow 0.5s var(--ease);
+  }
+
+  .nav.scrolled {
+    background: rgba(28, 26, 23, 0.92);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    color: var(--surface);
+    box-shadow: 0 10px 40px -20px rgba(0, 0, 0, 0.5);
+  }
+
+  .nav-inner {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+  }
+
+  .brand-mark {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 0.95rem;
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+
+  .brand:hover .brand-mark {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--surface);
+  }
+
+  .links {
+    display: flex;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .link {
+    position: relative;
+    display: block;
+    padding: 0.5rem 1rem;
+    font-size: 0.92rem;
+    font-weight: 500;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+  }
+
+  .link::after {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    bottom: 0.2rem;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.5s var(--ease);
+  }
+
+  .link:hover,
+  .link.active {
+    opacity: 1;
+  }
+
+  .link:hover::after,
+  .link.active::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  .nav-cta {
+    padding: 0.6rem 1.25rem;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+
+  .nav-cta:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--surface);
+  }
+
+  .progress {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 100%;
+    background: var(--accent);
+    transform: scaleX(var(--progress, 0));
+    transform-origin: left;
+  }
+
+  .menu-toggle {
+    display: none;
+    position: relative;
+    z-index: 60;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .menu-toggle span {
+    position: absolute;
+    left: 0.6rem;
+    right: 0.6rem;
+    height: 1.5px;
+    background: currentColor;
+    transition: transform 0.5s var(--ease);
+  }
+
+  .menu-toggle span:first-child {
+    transform: translateY(-4px);
+  }
+
+  .menu-toggle span:last-child {
+    transform: translateY(4px);
+  }
+
+  .mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    padding: var(--gutter);
+    background: var(--ink);
+    color: var(--surface);
+    clip-path: circle(0% at calc(100% - 2.5rem) 2.25rem);
+    transition: clip-path 0.8s var(--ease);
+  }
+
+  .mobile-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+
+  .mobile-menu li {
+    overflow: hidden;
+    border-bottom: 1px solid rgba(251, 248, 243, 0.12);
+  }
+
+  .mobile-menu a {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 1rem 0;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 9vw, 3rem);
+    transform: translateY(100%);
+    transition: transform 0.7s var(--ease);
+    transition-delay: calc(var(--i) * 60ms);
+  }
+
+  .mobile-menu .num {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    color: var(--accent);
+  }
+
+  body.menu-open .mobile-menu {
+    clip-path: circle(150% at calc(100% - 2.5rem) 2.25rem);
+  }
+
+  body.menu-open .mobile-menu a {
+    transform: none;
+    transition-delay: calc(200ms + var(--i) * 60ms);
+  }
+
+  body.menu-open .nav {
+    color: var(--surface);
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  body.menu-open .menu-toggle span:first-child {
+    transform: rotate(45deg);
+  }
+
+  body.menu-open .menu-toggle span:last-child {
+    transform: rotate(-45deg);
+  }
+
+  @media (max-width: 860px) {
+    nav,
+    .nav-cta {
+      display: none;
+    }
+
+    .menu-toggle {
+      display: block;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .brand-name {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const nav = document.getElementById('nav')!;
+  const toggle = nav.querySelector<HTMLButtonElement>('.menu-toggle')!;
+  const mobileMenu = document.getElementById('mobile-menu')!;
+  const links = document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]');
+
+  // Transparent → solid bar, plus the thin scroll-progress line.
+  let ticking = false;
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const y = window.scrollY;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      nav.classList.toggle('scrolled', y > 40);
+      nav.style.setProperty('--progress', String(max > 0 ? y / max : 0));
+      ticking = false;
+    });
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // Highlight the link for whichever section sits in the middle of the viewport.
+  const sectionObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        links.forEach((link) =>
+          link.classList.toggle('active', link.dataset.navLink === entry.target.id),
+        );
+      }
+    },
+    { rootMargin: '-45% 0px -50% 0px' },
+  );
+  links.forEach((link) => {
+    const section = document.getElementById(link.dataset.navLink!);
+    if (section) sectionObserver.observe(section);
+  });
+
+  const setMenu = (open: boolean) => {
+    document.body.classList.toggle('menu-open', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    mobileMenu.setAttribute('aria-hidden', String(!open));
+  };
+
+  toggle.addEventListener('click', () => setMenu(!document.body.classList.contains('menu-open')));
+  mobileMenu.querySelectorAll('[data-mobile-link]').forEach((a) =>
+    a.addEventListener('click', () => setMenu(false)),
+  );
+  window.addEventListener('keydown', (e) => e.key === 'Escape' && setMenu(false));
+</script>

@@ -1,0 +1,157 @@
+---
+import { profile } from '../data/content';
+
+const year = new Date().getFullYear();
+const socials = [
+  { label: 'LinkedIn', href: profile.linkedin },
+  { label: 'GitHub', href: profile.github },
+  { label: 'Email', href: `mailto:${profile.email}` },
+];
+---
+
+<section id="contact" class="contact">
+  <div class="container">
+    <div class="contact-inner section">
+      <span class="eyebrow" data-reveal>Contact</span>
+      <h2 class="headline" data-reveal style="--delay: 100ms">
+        Let’s build something <em>together</em>.
+      </h2>
+      <p class="lead" data-reveal style="--delay: 200ms">
+        Whether it’s a role, a freelance project, or just a conversation about AI and the web — my inbox is open.
+      </p>
+
+      <a href={`mailto:${profile.email}`} class="email" data-reveal style="--delay: 300ms">
+        <span>{profile.email}</span>
+        <span class="arrow" aria-hidden="true">↗</span>
+      </a>
+
+      <ul class="socials" data-reveal style="--delay: 400ms">
+        {
+          socials.map((s) => (
+            <li>
+              <a href={s.href} target={s.href.startsWith('http') ? '_blank' : undefined} rel="noopener">
+                {s.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <footer class="footer">
+      <span>© {year} {profile.name}</span>
+      <a href="#home" class="top">Back to top ↑</a>
+    </footer>
+  </div>
+</section>
+
+<style>
+  .contact {
+    background: var(--ink);
+    color: var(--surface);
+  }
+
+  .contact-inner {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .eyebrow {
+    color: var(--accent);
+  }
+
+  .headline {
+    margin-top: 1.25rem;
+    font-size: clamp(2.75rem, 8vw, 6rem);
+    max-width: 14ch;
+  }
+
+  .headline em {
+    color: var(--accent);
+  }
+
+  .lead {
+    margin-top: 1.5rem;
+    max-width: 36rem;
+    color: rgba(251, 248, 243, 0.65);
+  }
+
+  .email {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 3rem;
+    padding-bottom: 0.4rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 4vw, 2.5rem);
+    overflow-wrap: anywhere;
+  }
+
+  .email::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: currentColor;
+    transform-origin: right;
+    transition: transform 0.6s var(--ease);
+  }
+
+  .email:hover::after {
+    transform: scaleX(0);
+  }
+
+  .email .arrow {
+    color: var(--accent);
+    transition: transform 0.5s var(--ease);
+  }
+
+  .email:hover .arrow {
+    transform: translate(4px, -4px);
+  }
+
+  .socials {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin: 2.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .socials a {
+    display: block;
+    padding: 0.65rem 1.4rem;
+    border: 1px solid rgba(251, 248, 243, 0.25);
+    border-radius: 999px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+
+  .socials a:hover {
+    background: var(--surface);
+    border-color: var(--surface);
+    color: var(--ink);
+  }
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 2rem 0;
+    border-top: 1px solid rgba(251, 248, 243, 0.12);
+    font-size: 0.85rem;
+    color: rgba(251, 248, 243, 0.5);
+  }
+
+  .top:hover {
+    color: var(--surface);
+  }
+</style>
