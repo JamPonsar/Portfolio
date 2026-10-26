@@ -98,14 +98,25 @@ import { experience } from '../data/content';
 </section>
 
 <script>
-  import { createExpander } from '../scripts/expand';
+  import { createMorph } from '../scripts/morph';
 
   const section = document.getElementById('experience') as HTMLElement;
   const panel = section.querySelector<HTMLElement>('.xp-panel')!;
   const details = [...panel.querySelectorAll<HTMLElement>('.xp-detail')];
 
-  const expander = createExpander({
+  const expander = createMorph({
     panel,
+    // The row's hover card is its ::after, which reaches past the row's edges
+    surface(card) {
+      const after = getComputedStyle(card, '::after');
+      return {
+        top: parseFloat(after.top),
+        right: parseFloat(after.right),
+        bottom: parseFloat(after.bottom),
+        left: parseFloat(after.left),
+        radius: parseFloat(after.borderTopLeftRadius),
+      };
+    },
     onOpen(card) {
       details.forEach((d) => (d.hidden = d.dataset.index !== card.dataset.index));
       panel.querySelector('.xp-period')!.textContent = card.querySelector('.period')?.textContent ?? '';
@@ -264,6 +275,32 @@ import { experience } from '../data/content';
 
   .xp-ghost::after {
     opacity: 1;
+  }
+
+  .xp-ghost {
+    border-color: transparent;
+  }
+
+  /* The row itself is square, so the lift shadow goes on the rounded card instead */
+  .xp-flying {
+    box-shadow: none !important;
+  }
+
+  .xp-flying::after {
+    box-shadow: 0 40px 80px -40px rgba(28, 26, 23, 0.35);
+  }
+
+  /* Same colour as the hover card, so the card can grow into the page */
+  .xp-panel {
+    background: var(--surface);
+    box-shadow: none;
+  }
+
+  /* morph.ts animates the panel content itself */
+  .xp-panel .xp-inner {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 
   .detail-company {

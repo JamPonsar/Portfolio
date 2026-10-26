@@ -4,15 +4,6 @@ import ChurnDemo from './demos/ChurnDemo.astro';
 import DolphinDemo from './demos/DolphinDemo.astro';
 import StackDemo from './demos/StackDemo.astro';
 import RoboDemo from './demos/RoboDemo.astro';
-
-// The track holds two identical groups so translating by -50% loops seamlessly.
-// Each group repeats the projects so it is wider than any realistic viewport.
-const COPIES_PER_GROUP = 2;
-const groups = [0, 1].map((g) =>
-  Array.from({ length: COPIES_PER_GROUP }, (_, c) =>
-    projects.map((project, index) => ({ project, index, primary: g === 0 && c === 0 }))
-  ).flat()
-);
 ---
 
 <section id="projects" class="section projects">
@@ -23,37 +14,32 @@ const groups = [0, 1].map((g) =>
     </h2>
   </div>
 
-  <div class="viewport" data-reveal style="--delay: 200ms">
-    <div class="track">
+  <div class="container">
+    <div class="grid" data-reveal style="--delay: 200ms">
       {
-        groups.map((group) => (
-          <div class="group">
-            {group.map(({ project, index, primary }) => (
-              <article
-                class:list={['card', { dup: !primary }]}
-                style="--card-accent: var(--accent)"
-                data-index={index}
-                role="button"
-                tabindex={primary ? 0 : -1}
-                aria-hidden={primary ? undefined : 'true'}
-                aria-label={`${project.title} — view details`}
-              >
-                <div class="card-top">
-                  <span class="period">{project.period}</span>
-                  <span class="more" aria-hidden="true">
-                    View <span>↗</span>
-                  </span>
-                </div>
-                <h3>{project.title}</h3>
-                <p>{project.description}</p>
-                <ul class="tags">
-                  {project.tags.map((tag) => (
-                    <li class="tag">{tag}</li>
-                  ))}
-                </ul>
-              </article>
-            ))}
-          </div>
+        projects.map((project, index) => (
+          <article
+            class="card"
+            style="--card-accent: var(--accent-pastel)"
+            data-index={index}
+            role="button"
+            tabindex="0"
+            aria-label={`${project.title} — view details`}
+          >
+            <div class="card-top">
+              <span class="period">{project.period}</span>
+              <span class="more" aria-hidden="true">
+                View <span>↗</span>
+              </span>
+            </div>
+            <h3>{project.title}</h3>
+            <p>{project.description}</p>
+            <ul class="tags">
+              {project.tags.map((tag) => (
+                <li class="tag">{tag}</li>
+              ))}
+            </ul>
+          </article>
         ))
       }
     </div>
@@ -115,13 +101,13 @@ const groups = [0, 1].map((g) =>
 </section>
 
 <script>
-  import { createExpander } from '../scripts/expand';
+  import { createMorph } from '../scripts/morph';
 
   const section = document.getElementById('projects') as HTMLElement;
   const panel = section.querySelector<HTMLElement>('.xp-panel')!;
   const details = [...panel.querySelectorAll<HTMLElement>('.xp-detail')];
 
-  const expander = createExpander({
+  const expander = createMorph({
     panel,
     onOpen(card) {
       const index = card.dataset.index;
@@ -129,14 +115,9 @@ const groups = [0, 1].map((g) =>
       const id = details.find((d) => d.dataset.index === index)?.dataset.id;
       window.dispatchEvent(new CustomEvent('project-open', { detail: { id } }));
       panel.querySelector('.xp-period')!.textContent = card.querySelector('.period')?.textContent ?? '';
-      // Pause the carousel so the card is still in place when the panel closes
-      section.classList.add('is-open');
     },
     onClose() {
       window.dispatchEvent(new CustomEvent('project-close'));
-    },
-    onClosed() {
-      section.classList.remove('is-open');
     },
   });
 
@@ -149,35 +130,22 @@ const groups = [0, 1].map((g) =>
     overflow: hidden;
   }
 
-  /* Carousel */
-  .viewport {
-    margin-top: 4rem;
-    padding: 1.5rem 0 2rem;
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-  }
-
-  .track {
-    display: flex;
-    width: max-content;
-    animation: scroll 80s linear infinite;
-  }
-
-  .viewport:hover .track,
-  .projects.is-open .track,
-  .viewport:focus-within .track {
-    animation-play-state: paused;
-  }
-
-  .group {
-    display: flex;
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
-    padding-right: 1.5rem;
+    margin-top: 4rem;
   }
 
-  @keyframes scroll {
-    to {
-      transform: translateX(-50%);
+  @media (max-width: 960px) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 620px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 
@@ -185,8 +153,6 @@ const groups = [0, 1].map((g) =>
     position: relative;
     display: flex;
     flex-direction: column;
-    flex: none;
-    width: min(82vw, 380px);
     gap: 1rem;
     padding: clamp(1.5rem, 3vw, 2.25rem);
     border-radius: 24px;
@@ -221,9 +187,20 @@ const groups = [0, 1].map((g) =>
     box-shadow: 0 30px 60px -30px rgba(28, 26, 23, 0.45);
   }
 
-  .card:hover,
-  .xp-ghost {
-    color: var(--surface);
+  .xp-panel {
+    background: var(--accent-pastel);
+    box-shadow: none;
+  }
+
+  /* morph.ts animates the panel content itself */
+  .xp-panel .xp-inner {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .xp-flying {
+    transition: none;
   }
 
   .card:hover::before,
@@ -289,20 +266,8 @@ const groups = [0, 1].map((g) =>
     transition: color 0.5s ease, border-color 0.5s ease;
   }
 
-  .card:hover .period,
-  .card:hover .more,
-  .card:hover p,
-  .card:hover .tag,
-  .xp-ghost .period,
-  .xp-ghost .more,
-  .xp-ghost p,
-  .xp-ghost .tag {
-    color: rgba(251, 248, 243, 0.9);
-  }
-
-  .card:hover .tag,
-  .xp-ghost .tag {
-    border-color: rgba(251, 248, 243, 0.35);
+  .card:hover {
+    border-color: transparent;
   }
 
   .demo-hint {
@@ -310,21 +275,5 @@ const groups = [0, 1].map((g) =>
     margin-bottom: 1.25rem;
     color: var(--ink-soft);
     font-size: 0.95rem;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .track {
-      animation: none;
-    }
-
-    .viewport {
-      overflow-x: auto;
-      -webkit-mask-image: none;
-      mask-image: none;
-    }
-
-    .dup {
-      display: none;
-    }
   }
 </style>
