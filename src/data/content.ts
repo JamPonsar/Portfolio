@@ -27,26 +27,28 @@ export const navLinks = [
 
 export const about = {
   paragraphs: [
-    'I’m a Software Engineer at Capgemini with a strong focus on full-stack development, AI-driven engineering, and cloud-ready solutions. Day to day I work across Python, React, Node.js, SQL and LangChain, contributing to projects that pair full-stack applications with agentic AI — LLM agents and orchestrated agent workflows.',
-    'I hold a B.S. in Computer Science from Stony Brook University, where I built a solid foundation in software engineering, system design and data-driven development. I’m currently pursuing the AWS Cloud Practitioner certification, and I’m happiest when I’m learning something new and turning a messy problem into a thoughtful, well-built solution.',
+    'I’m a Software Engineer at Capgemini, building agentic AI and full-stack systems. I design LLM agent pipelines with Claude and LangChain, the Python and FastAPI services around them, and the React interfaces people use, with guardrails like JSON Schema validation and human review so the output can be trusted.',
+    'I hold a B.S. in Computer Science from Stony Brook University. Outside Capgemini, I’ve freelanced for a client end to end, from vague requirements to a live storefront, and I keep building projects of my own to try out new tools and ideas. I’m happiest when I’m learning something new and turning a messy problem into a thoughtful, well-built solution.',
   ],
   stats: [
     { value: 'B.S.', label: 'Computer Science, Stony Brook' },
     { value: 'AI', label: 'Agentic systems & LLM workflows' },
   ],
   skills: [
-    'Python',
-    'TypeScript',
-    'React',
-    'Node.js',
-    'FastAPI',
+    'Claude API',
     'LangChain',
-    'Agentic AI',
+    'Multi-Agent Orchestration',
+    'MCP Servers',
     'Prompt Engineering',
+    'Claude Code',
+    'Python',
+    'FastAPI',
+    'React',
+    'TypeScript',
     'SQL',
-    'MongoDB',
-    'Shopify Liquid',
-    'AWS',
+    'Azure',
+    'Jira',
+    'Agile',
   ],
 };
 
@@ -58,25 +60,28 @@ export const experience = [
     period: 'Jan 2026 — Present',
     location: 'New York, NY',
     points: [
-      'Building internal innovation projects that combine full-stack development with agentic AI — LLM agents, orchestrated agent workflows and intelligent automation with LangChain.',
-      'Developing backend services in Python and FastAPI, focused on API design, data flow and integration with agent systems.',
-      'Implementing React frontends with clean UI patterns that interact seamlessly with backend and AI-driven components.',
-      'Designing SQLite schemas and JSON Schemas to validate and shape data contracts; applying prompt engineering for reliable agent behavior.',
+      'Developed LLM agents for the self-correcting stage of BNY’s agentic rules pipeline that cluster DMN failure reasons, generate and apply fixes, and regenerate the model; built chain-of-thought tracing and a React UI that explains each agent step to subject-matter experts.',
+      'Designed a 5-agent Claude pipeline that turns a plain-English description of a data source into working SQL, with confidence scoring that routes uncertain output to human review.',
+      'Led a team of 4 building a LangChain agent pipeline that generates custom React front-end pages from a prompt or image; owned the agent logic, MCP server integrations, and the Python/FastAPI REST layer with JSON Schema validation.',
+      'Supported AWS-to-Azure cloud migration (code, repos, databases); configured Azure workspaces.',
+      'Worked in Agile sprints using Jira boards for sprint planning, and regular code reviews.',
     ],
-    tags: ['Python', 'FastAPI', 'React', 'LangChain', 'SQLite'],
-    title: 'Software Engineer — AI Development',
+    tags: ['Claude API', 'LangChain', 'Python', 'FastAPI', 'React'],
+    title: 'Software Engineer',
+    plant: 'monstera' as const,
     overview: [
-      'At Capgemini I work on the AI development side of internal innovation projects: building LLM-powered agents, plus the backend services and interfaces around them, and taking them from prototype to a business-ready product.',
-      'Most of my work is in Anthropic’s ecosystem — Claude through the Anthropic API, Claude Code for AI-assisted development, and MCP servers to connect agents to other services — with LangChain for orchestration. I also support the team’s move from AWS to Azure.',
+      'At Capgemini I’m a software engineer in the Financial Services group, building LLM-powered agents along with the backend services and interfaces around them. I have experience designing and creating agents and agentic workflows with a wide range of models and technologies, and I specialize in the Anthropic ecosystem: Claude through the API, Claude Code for AI-assisted development and MCP servers to connect agents to other services, with LangChain for multi-agent orchestration. Around that I write Python and FastAPI backends with JSON Schema validation, build React front ends, and support the team’s move from AWS to Azure.',
+      'I’m currently on client work at BNY, on their agentic rules pipeline, where LLM agents produce business rules as DMN decision models. I own the self-correcting stage: when a model fails, my agents cluster the reasons it failed, generate and apply fixes, and regenerate the model. I also built chain-of-thought tracing and a React UI that shows subject-matter experts what each agent did and why.',
     ],
     details: [
-      'Designed and built production LLM-powered AI agents with Claude (Anthropic API) and LangChain, engineering multi-agent orchestration with custom prompt templates, system instructions, chain logic and tool-use patterns for enterprise internal tooling.',
-      'Used Claude Code for AI-assisted development, integrated MCP servers for cross-service API connectivity, and applied prompt engineering to improve agent reliability, reasoning quality and output consistency.',
-      'Architected agentic backend services in Python and FastAPI — RESTful APIs, SQLite data layers and JSON Schema validation — for scalable, production-ready agent pipelines.',
-      'Built React front-end components on top of AI-driven backends, and worked cross-functionally to ship a business-ready agentic AI product.',
-      'Supported the AWS-to-Azure cloud migration (code, repos and databases), configured Azure workspaces, and took part in Agile sprint planning, estimation and code reviews.',
+      'Developed the LLM agents for the self-correcting stage of BNY’s agentic rules pipeline: they cluster DMN failure reasons, generate and apply fixes, and regenerate the model.',
+      'Built chain-of-thought tracing and a React UI that explains each agent step to subject-matter experts, so they can see and trust what the agents did.',
+      'Designed a 5-agent Claude pipeline that turns a plain-English description of a data source into working SQL, with confidence scoring that routes uncertain output to human review.',
+      'Led a team of 4 building a LangChain agent pipeline that generates custom React front-end pages from a prompt or image; owned the agent logic, MCP server integrations, and the Python/FastAPI REST layer with JSON Schema validation.',
+      'Supported the AWS-to-Azure cloud migration (code, repos, databases) and configured Azure workspaces.',
+      'Worked in Agile sprints using Jira boards for sprint planning, and took part in regular code reviews.',
     ],
-    skills: ['Claude API', 'Claude Code', 'LangChain', 'MCP Servers', 'Prompt Engineering', 'Python', 'FastAPI', 'React', 'SQLite', 'JSON Schema', 'Azure', 'AWS', 'Agile'],
+    skills: ['Claude API', 'Claude Code', 'LangChain', 'MCP Servers', 'Multi-Agent Orchestration', 'Prompt Engineering', 'Python', 'FastAPI', 'React', 'JSON Schema', 'SQL', 'Azure', 'AWS', 'Jira', 'Agile'],
   },
   {
     role: 'Web Product Developer',
@@ -92,6 +97,7 @@ export const experience = [
     ],
     tags: ['Shopify', 'Liquid', 'JavaScript', 'UI Design'],
     title: 'Web Product Developer',
+    plant: 'olive' as const,
     overview: [
       'As a freelancer, I took a new luxury tile brand’s online store from nothing to launch on Shopify, owning every stage: discovery, UI design, development and go-live.',
       'Rather than leaning on theme settings, I built custom sections and pages directly in the theme code. Competitor reviews, several prototypes and rounds of client feedback turned loose requirements into a clear direction, all within a fixed budget and timeline.',
@@ -103,6 +109,16 @@ export const experience = [
       'Managed scope within a fixed budget and timeline by prioritizing features and communicating trade-offs early.',
     ],
     skills: ['Shopify', 'Liquid', 'HTML', 'CSS', 'JavaScript', 'UI Design', 'Prototyping', 'Client Communication'],
+    gallery: {
+      url: 'https://lltile.com',
+      host: 'lltile.com',
+      shots: [
+        { src: '/images/lily-lilac/home.jpg', label: 'Homepage', caption: 'The homepage: a full-bleed featured collection hero.', alt: 'Lily & Lilac homepage with the Merida featured collection over a kitchen photo' },
+        { src: '/images/lily-lilac/collections.jpg', label: 'Collections', caption: 'The collections index, sorted A–Z, with filters for price, material and color.', alt: 'Lily & Lilac collections page with filters and a grid of tile collections' },
+        { src: '/images/lily-lilac/collection.jpg', label: 'Collection', caption: 'A collection page opens with a hero image and breadcrumb trail.', alt: 'Lily & Lilac Banff collection page with a full-width hero image' },
+        { src: '/images/lily-lilac/product.jpg', label: 'Product', caption: 'A product page: style and size options, price per sheet and a footage calculator.', alt: 'Lily & Lilac product page for Banff Onice Azzurro porcelain tile' },
+      ],
+    },
   },
   {
     role: 'Store Associate',
@@ -116,6 +132,7 @@ export const experience = [
     ],
     tags: ['Customer Service', 'Retail'],
     title: 'Store Associate',
+    plant: 'ginkgo' as const,
     overview: [
       'A part-time, customer-facing role on the floor of a New York UNIQLO store, helping shoppers every day and keeping the store running smoothly.',
       'It built skills that carry over to engineering: listening for what someone actually needs, staying calm when it’s busy, and keeping standards consistent.',
@@ -140,6 +157,7 @@ export const experience = [
     ],
     tags: ['Python', 'JavaScript', 'Niagara 4', 'QA'],
     title: 'BMS Programmer & QA Developer',
+    plant: 'fern' as const,
     overview: [
       'A summer internship building and testing software for building management systems (BMS), the platforms that monitor alarms and equipment across large buildings.',
       'I worked on both the build and the test side: writing Python and JavaScript to pull data from Niagara 4 and modernize interfaces, and leading QA for major deployments, including Bronx Care Hospital and Goochland County Elementary School.',
@@ -159,6 +177,7 @@ export const projects = [
   {
     id: 'churn',
     title: 'Bank Customer Churn Analysis',
+    plant: 'eucalyptus' as const,
     period: 'Dec 2025',
     description:
       'End-to-end analysis of a 10,000-record banking dataset to predict churn. Built 15+ visualizations and surfaced key drivers — complaints, inactivity (nearly 2× risk), geography and age — then turned them into retention recommendations.',
@@ -183,6 +202,7 @@ export const projects = [
   {
     id: 'dolphin',
     title: 'Dolphin Data Sharing',
+    plant: 'succulent' as const,
     period: 'Sep — Dec 2024',
     description:
       'A decentralized P2P file-sharing app with hash-based uploads and search, an HTTP proxy layer, MongoDB metadata, and btcd/btcwallet integration in Go for transactions and mining.',
@@ -207,6 +227,7 @@ export const projects = [
   {
     id: 'stackoverflow',
     title: 'Fake Stack Overflow',
+    plant: 'sprig' as const,
     period: 'Mar — May 2024',
     description:
       'A full-stack Stack Overflow clone with Q&A posting, tag filtering, voting and pagination, backed by Express and MongoDB schemas for questions, answers and tags.',
@@ -231,6 +252,7 @@ export const projects = [
   {
     id: 'roborush',
     title: 'Robo-Rush',
+    plant: 'fiddle' as const,
     period: 'Mar — May 2023',
     description:
       'A 2D side-scrolling runner built from scratch with two teammates on the Wolfie2D engine — original artwork, double jumping, unique obstacles and dynamic animations.',

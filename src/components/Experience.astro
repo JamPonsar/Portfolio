@@ -1,8 +1,15 @@
 ---
 import { experience } from '../data/content';
+import Plant from './Plant.astro';
+import Sprig from './Sprig.astro';
 ---
 
-<section id="experience" class="section experience">
+<section id="experience" class="section experience has-deco">
+  <div class="deco" aria-hidden="true">
+    <span class="blob" style="right: -16%; top: 44%; width: min(34vw, 420px); aspect-ratio: 1; --blob: rgba(143, 165, 115, 0.12)"></span>
+    <Sprig tone="moss" leaves={10} bend={0.4} style="left: -1%; top: 28%; width: clamp(90px, 10vw, 160px); --rot: 12deg; --dur: 11s" class="hide-sm" />
+    <Sprig tone="sage" leaves={7} bend={-0.4} flip style="right: 1%; top: 6%; width: clamp(70px, 8vw, 120px); --rot: -16deg; --delay: -6s" class="hide-sm" />
+  </div>
   <div class="container">
     <span class="eyebrow" data-reveal>Work experience</span>
     <h2 class="section-title" data-reveal style="--delay: 100ms">
@@ -67,15 +74,77 @@ import { experience } from '../data/content';
         experience.map((job, i) => (
           <div class="xp-detail" data-index={i} hidden>
             <h3>{job.title}</h3>
-            <p class="xp-lead">
-              <span class="detail-company">{job.company}</span> · {job.location} · {job.type}
-            </p>
+            <div class="xp-intro">
+              <div class="xp-intro-text">
+              <p class="xp-lead">
+                <span class="detail-company">{job.company}</span> · {job.location} · {job.type}
+              </p>
 
-            <div class="xp-overview">
-              {job.overview.map((para) => (
-                <p>{para}</p>
-              ))}
+              <div class="xp-overview">
+                {job.overview.map((para) => (
+                  <p>{para}</p>
+                ))}
+              </div>
+              </div>
+              <div class="xp-art" aria-hidden="true">
+                <Plant kind={job.plant} />
+              </div>
             </div>
+
+            {job.gallery && (
+              <div class="showcase" data-showcase>
+                <div class="browser">
+                  <div class="browser-bar">
+                    <span class="dots" aria-hidden="true">
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                    <a class="browser-url" href={job.gallery.url} target="_blank" rel="noreferrer">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="5" y="11" width="14" height="9" rx="2" />
+                        <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                      </svg>
+                      {job.gallery.host}
+                    </a>
+                  </div>
+                  <div class="stage">
+                    <div class="shots">
+                      {job.gallery.shots.map((shot, n) => (
+                        <figure class="shot" data-active={n === 0 ? '' : undefined}>
+                          <img src={shot.src} alt={shot.alt} width="1800" height="918" loading="lazy" decoding="async" />
+                          <figcaption>{shot.caption}</figcaption>
+                        </figure>
+                      ))}
+                    </div>
+                    <button type="button" class="arrow prev" aria-label="Previous screenshot">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 5l-7 7 7 7" />
+                      </svg>
+                    </button>
+                    <button type="button" class="arrow next" aria-label="Next screenshot">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="dots-nav" role="group" aria-label="Choose a screenshot">
+                  {job.gallery.shots.map((shot, n) => (
+                    <button type="button" class="dot" aria-label={`Show the ${shot.label.toLowerCase()} screenshot`} aria-pressed={n === 0 ? 'true' : 'false'} data-shot={n} />
+                  ))}
+                </div>
+
+                <div class="showcase-foot">
+                  <p class="shot-caption" aria-live="polite">{job.gallery.shots[0].caption}</p>
+                  <a class="visit" href={job.gallery.url} target="_blank" rel="noreferrer">
+                    Check out the website for yourself
+                    <span class="visit-arrow" aria-hidden="true">↗</span>
+                  </a>
+                </div>
+              </div>
+            )}
 
             <h4>What I did</h4>
             <ul class="xp-list">
@@ -124,6 +193,53 @@ import { experience } from '../data/content';
   });
 
   section.querySelectorAll<HTMLElement>('.job').forEach(expander.bind);
+
+  // Screenshot gallery: arrows and dots change the screenshot. On phones the screenshots
+  // sit in a swipeable strip instead, and the dots follow where you've swiped to.
+  const phone = window.matchMedia('(max-width: 700px)');
+
+  section.querySelectorAll<HTMLElement>('[data-showcase]').forEach((box) => {
+    const strip = box.querySelector<HTMLElement>('.shots')!;
+    const shots = [...box.querySelectorAll<HTMLElement>('.shot')];
+    const dots = [...box.querySelectorAll<HTMLButtonElement>('.dot')];
+    const caption = box.querySelector<HTMLElement>('.shot-caption')!;
+    let current = 0;
+
+    function show(n: number, scroll = true) {
+      current = (n + shots.length) % shots.length;
+      shots.forEach((shot, i) => shot.toggleAttribute('data-active', i === current));
+      dots.forEach((dot, i) => dot.setAttribute('aria-pressed', String(i === current)));
+      caption.textContent = shots[current].querySelector('figcaption')!.textContent;
+      if (scroll && phone.matches) {
+        const slide = shots[current];
+        strip.scrollTo({ left: slide.offsetLeft - (strip.clientWidth - slide.offsetWidth) / 2, behavior: 'smooth' });
+      }
+    }
+
+    box.querySelector('.prev')!.addEventListener('click', () => show(current - 1));
+    box.querySelector('.next')!.addEventListener('click', () => show(current + 1));
+    dots.forEach((dot, n) => dot.addEventListener('click', () => show(n)));
+
+    box.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') show(current - 1);
+      else if (e.key === 'ArrowRight') show(current + 1);
+    });
+
+    // Swiping on a phone: whichever screenshot is nearest the middle is the current one
+    strip.addEventListener(
+      'scroll',
+      () => {
+        if (!phone.matches) return;
+        const middle = strip.scrollLeft + strip.clientWidth / 2;
+        const nearest = shots.reduce((best, shot, i) => {
+          const centre = shot.offsetLeft + shot.offsetWidth / 2;
+          return Math.abs(centre - middle) < Math.abs(shots[best].offsetLeft + shots[best].offsetWidth / 2 - middle) ? i : best;
+        }, 0);
+        if (nearest !== current) show(nearest, false);
+      },
+      { passive: true }
+    );
+  });
 </script>
 
 <style>
@@ -301,6 +417,319 @@ import { experience } from '../data/content';
     opacity: 1;
     transform: none;
     transition: none;
+  }
+
+  /* Website screenshots */
+  .showcase {
+    display: grid;
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+
+  .browser {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--bg);
+    box-shadow: 0 30px 60px -35px rgba(28, 26, 23, 0.45);
+  }
+
+  .browser-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0.7rem 1rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .dots {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .dots i {
+    width: 0.62rem;
+    height: 0.62rem;
+    border-radius: 50%;
+    background: var(--line);
+  }
+
+  .browser-url {
+    position: absolute;
+    left: 50%;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.28rem 0.9rem;
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--ink-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transform: translateX(-50%);
+    transition: color 0.3s ease;
+  }
+
+  .browser-url:hover,
+  .browser-url:focus-visible {
+    color: var(--accent);
+  }
+
+  /* All screenshots share one cell and cross-fade */
+  .shots {
+    display: grid;
+    aspect-ratio: 1800 / 918;
+  }
+
+  .shot {
+    grid-area: 1 / 1;
+    margin: 0;
+    opacity: 0;
+    transition: opacity 0.55s ease;
+  }
+
+  .shot[data-active] {
+    opacity: 1;
+  }
+
+  .shot img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .shot figcaption {
+    display: none;
+  }
+
+  .stage {
+    position: relative;
+  }
+
+  .arrow {
+    position: absolute;
+    top: 50%;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: rgba(251, 248, 243, 0.92);
+    backdrop-filter: blur(6px);
+    color: var(--ink);
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(-50%) scale(0.9);
+    transition:
+      opacity 0.3s ease,
+      transform 0.4s var(--ease),
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+
+  .prev {
+    left: 1rem;
+  }
+
+  .next {
+    right: 1rem;
+  }
+
+  /* Appear when you reach for the screenshot; always there for keyboard users */
+  .stage:hover .arrow,
+  .arrow:focus-visible {
+    opacity: 1;
+    transform: translateY(-50%);
+  }
+
+  .arrow:hover,
+  .arrow:focus-visible {
+    background: var(--ink);
+    color: var(--surface);
+    outline: none;
+  }
+
+  @media (hover: none) {
+    .arrow {
+      opacity: 1;
+      transform: translateY(-50%);
+    }
+  }
+
+  .dots-nav {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+  }
+
+  /* The visible dot is small; the button around it is a comfortable tap target */
+  .dot {
+    position: relative;
+    width: 0.65rem;
+    height: 0.65rem;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: var(--line);
+    cursor: pointer;
+    transition:
+      width 0.4s var(--ease),
+      background-color 0.3s ease;
+  }
+
+  .dot::after {
+    content: '';
+    position: absolute;
+    inset: -0.7rem -0.3rem;
+  }
+
+  .dot:hover {
+    background: var(--ink-muted);
+  }
+
+  .dot[aria-pressed='true'] {
+    width: 1.6rem;
+    background: var(--accent);
+  }
+
+  .dot:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .showcase-foot {
+    display: grid;
+    justify-items: center;
+    gap: 1.5rem;
+    margin-top: 0.75rem;
+    text-align: center;
+  }
+
+  .shot-caption {
+    max-width: 34rem;
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+  }
+
+  /* The main call to action of the gallery, so it's bigger and brighter than the other links */
+  .visit {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.6rem 0.6rem 0.6rem 1.75rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--surface);
+    font-size: 1.1rem;
+    font-weight: 700;
+    box-shadow: 0 18px 36px -18px rgba(181, 101, 47, 0.8);
+    transition:
+      background-color 0.4s ease,
+      box-shadow 0.4s ease,
+      transform 0.5s var(--ease);
+  }
+
+  .visit-arrow {
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--accent);
+    font-size: 1.15rem;
+    transition:
+      transform 0.5s var(--ease),
+      background-color 0.4s ease,
+      color 0.4s ease;
+  }
+
+  .visit:hover,
+  .visit:focus-visible {
+    background: var(--ink);
+    box-shadow: 0 18px 36px -18px rgba(28, 26, 23, 0.8);
+    outline: none;
+    transform: translateY(-3px);
+  }
+
+  .visit:hover .visit-arrow,
+  .visit:focus-visible .visit-arrow {
+    color: var(--ink);
+    transform: rotate(45deg);
+  }
+
+  /* Phones: the screenshots sit in a row you swipe through, each with its own caption */
+  @media (max-width: 700px) {
+    .browser-url {
+      position: static;
+      margin-left: auto;
+      transform: none;
+    }
+
+    .shots {
+      display: flex;
+      aspect-ratio: auto;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+    }
+
+    .shots::-webkit-scrollbar {
+      display: none;
+    }
+
+    .shot {
+      flex: 0 0 88%;
+      scroll-snap-align: center;
+      opacity: 1;
+      padding: 0.75rem 0 1rem 0.75rem;
+    }
+
+    .shot:last-child {
+      padding-right: 0.75rem;
+    }
+
+    .shot img {
+      height: auto;
+      aspect-ratio: 1800 / 918;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    .shot figcaption {
+      display: block;
+      margin-top: 0.6rem;
+      color: var(--ink-muted);
+      font-size: 0.8rem;
+    }
+
+    .arrow,
+    .shot-caption {
+      display: none;
+    }
+
+    .visit {
+      width: 100%;
+      justify-content: space-between;
+      font-size: 1rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shot,
+    .arrow,
+    .dot,
+    .visit,
+    .visit-arrow {
+      transition: none;
+    }
   }
 
   .detail-company {

@@ -4,9 +4,16 @@ import ChurnDemo from './demos/ChurnDemo.astro';
 import DolphinDemo from './demos/DolphinDemo.astro';
 import StackDemo from './demos/StackDemo.astro';
 import RoboDemo from './demos/RoboDemo.astro';
+import Plant from './Plant.astro';
+import Sprig from './Sprig.astro';
 ---
 
-<section id="projects" class="section projects">
+<section id="projects" class="section projects has-deco">
+  <div class="deco" aria-hidden="true">
+    <span class="blob" style="left: -8%; bottom: -6%; width: min(30vw, 360px); aspect-ratio: 1; --blob: rgba(111, 78, 55, 0.07)"></span>
+    <Sprig tone="sage" leaves={9} bend={0.2} style="right: 0%; top: 3%; width: clamp(90px, 11vw, 170px); --rot: 14deg; --dur: 9s" />
+    <Sprig tone="moss" leaves={8} bend={-0.4} flip style="left: 1%; bottom: 1%; width: clamp(80px, 9vw, 140px); --rot: -12deg; --delay: -3s" class="hide-sm" />
+  </div>
   <div class="container">
     <span class="eyebrow" data-reveal>Selected projects</span>
     <h2 class="section-title" data-reveal style="--delay: 100ms">
@@ -61,12 +68,19 @@ import RoboDemo from './demos/RoboDemo.astro';
         projects.map((project, i) => (
           <div class="xp-detail" data-index={i} data-id={project.id} hidden>
             <h3>{project.title}</h3>
-            <p class="xp-lead">{project.description}</p>
+            <div class="xp-intro">
+              <div class="xp-intro-text">
+              <p class="xp-lead">{project.description}</p>
 
-            <div class="xp-overview">
-              {project.overview.map((para) => (
-                <p>{para}</p>
-              ))}
+              <div class="xp-overview">
+                {project.overview.map((para) => (
+                  <p>{para}</p>
+                ))}
+              </div>
+              </div>
+              <div class="xp-art" aria-hidden="true">
+                <Plant kind={project.plant} />
+              </div>
             </div>
 
             <h4>{project.demoTitle}</h4>

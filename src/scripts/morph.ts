@@ -229,7 +229,11 @@ export function createMorph({ panel, onOpen, onClose, onClosed, surface }: Optio
     // 3. Content fades out, bottom to top
     const { title, rest } = parts();
     // If the content is still fading in, jump it to the end first
-    panel.getAnimations({ subtree: true }).forEach((a) => a.finish());
+    // (looping decorations, like the swaying plant, can't be finished and would throw)
+    panel
+      .getAnimations({ subtree: true })
+      .filter((a) => a.effect?.getComputedTiming().endTime !== Infinity)
+      .forEach((a) => a.finish());
     const outs = [...rest].reverse().map((el, i) =>
       el.animate(
         [

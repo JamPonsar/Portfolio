@@ -1,9 +1,17 @@
 ---
 import { profile } from '../data/content';
+import Sprig from './Sprig.astro';
 ---
 
-<section id="home" class="hero">
+<section id="home" class="hero has-deco">
   <div class="hero-bg" aria-hidden="true"></div>
+
+  <div class="deco" aria-hidden="true">
+    <span class="blob" style="right: 4%; top: 14%; width: min(38vw, 470px); aspect-ratio: 1"></span>
+    <Sprig tone="sage" leaves={10} bend={0.3} style="right: 1%; bottom: 5%; width: clamp(110px, 15vw, 230px); --rot: 16deg" />
+    <Sprig tone="moss" leaves={8} bend={-0.5} flip style="right: 29%; bottom: 1%; width: clamp(80px, 9vw, 140px); --rot: -14deg; --dur: 11s; --delay: -3s" class="hide-sm" />
+    <Sprig tone="coffee" leaves={7} bend={0.4} style="left: -1%; bottom: 14%; width: clamp(70px, 8vw, 120px); --rot: 10deg; --dur: 10s; --delay: -5s" class="hide-sm" />
+  </div>
 
   <div class="container hero-grid">
     <div class="hero-text">

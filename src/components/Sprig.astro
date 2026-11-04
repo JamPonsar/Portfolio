@@ -1,0 +1,113 @@
+---
+// A decorative leafy sprig. Drawn from a curved stem with leaves placed along it, so
+// each one can have a different number of leaves, bend and colour. Position it inside
+// a `.deco` layer (see global.css) with the `style` prop: top/left/width and --rot.
+interface Props {
+  leaves?: number;
+  bend?: number; // -1..1, how far the stem curves to either side
+  tone?: 'sage' | 'moss' | 'coffee';
+  flip?: boolean;
+  class?: string;
+  style?: string;
+}
+
+const { leaves = 9, bend = 0, tone = 'sage', flip = false, class: className = '', style = '' } = Astro.props;
+
+const palettes = {
+  sage: { leaf: ['#8fa573', '#b0c093'], stem: '#6f855a' },
+  moss: { leaf: ['#667f4f', '#85a068'], stem: '#4f6640' },
+  coffee: { leaf: ['#9a7050', '#b58d6b'], stem: '#7b573d' },
+};
+const { leaf: fills, stem } = palettes[tone];
+
+// Cubic Bezier stem, rooted at the bottom and curling up to the tip
+const P: [number, number][] = [
+  [100, 316],
+  [62 + bend * 42, 215],
+  [138 + bend * 42, 115],
+  [108 + bend * 22, 12],
+];
+const at = (t: number) => {
+  const u = 1 - t;
+  const f = (i: 0 | 1) =>
+    u * u * u * P[0][i] + 3 * u * u * t * P[1][i] + 3 * u * t * t * P[2][i] + t * t * t * P[3][i];
+  return [f(0), f(1)];
+};
+const heading = (t: number) => {
+  const u = 1 - t;
+  const d = (i: 0 | 1) =>
+    3 * u * u * (P[1][i] - P[0][i]) + 6 * u * t * (P[2][i] - P[1][i]) + 3 * t * t * (P[3][i] - P[2][i]);
+  return (Math.atan2(d(1), d(0)) * 180) / Math.PI;
+};
+
+const n = (v: number) => v.toFixed(1);
+const placed = Array.from({ length: leaves }, (_, i) => {
+  const t = 0.14 + (i / Math.max(leaves - 1, 1)) * 0.8;
+  const [x, y] = at(t);
+  const side = i % 2 ? 1 : -1;
+  return {
+    transform: `translate(${n(x)} ${n(y)}) rotate(${n(heading(t) + side * (54 - t * 16))}) scale(${n(1.4 - t * 0.78)})`,
+    fill: fills[i % 2],
+  };
+});
+const [tx, ty] = at(1);
+const tip = `translate(${n(tx)} ${n(ty)}) rotate(${n(heading(1))}) scale(0.6)`;
+
+const LEAF = 'M0 0C8 -13 32 -15 48 0C32 15 8 13 0 0Z';
+---
+
+<svg
+  class:list={['sprig', className]}
+  style={style}
+  viewBox="-30 -10 260 340"
+  fill="none"
+  aria-hidden="true"
+  focusable="false"
+>
+  <g transform={flip ? 'translate(200 0) scale(-1 1)' : undefined}>
+    <path
+      d={`M${P[0].join(' ')}C${P[1].join(' ')} ${P[2].join(' ')} ${P[3].join(' ')}`}
+      stroke={stem}
+      stroke-width="2.4"
+      stroke-linecap="round"
+    />
+    {
+      placed.map((leaf) => (
+        <g transform={leaf.transform}>
+          <path d={LEAF} fill={leaf.fill} fill-opacity="0.9" />
+          <path d="M3 0H40" stroke={stem} stroke-opacity="0.35" stroke-width="1.2" stroke-linecap="round" />
+        </g>
+      ))
+    }
+    <g transform={tip}>
+      <path d={LEAF} fill={fills[0]} fill-opacity="0.9" />
+      <path d="M3 0H40" stroke={stem} stroke-opacity="0.35" stroke-width="1.2" stroke-linecap="round" />
+    </g>
+  </g>
+</svg>
+
+<style>
+  .sprig {
+    position: absolute;
+    height: auto;
+    transform-origin: 50% 100%;
+    transform: rotate(var(--rot, 0deg));
+    animation: sway var(--dur, 9s) ease-in-out var(--delay, 0s) infinite;
+  }
+
+  @keyframes sway {
+    0%,
+    100% {
+      transform: rotate(calc(var(--rot, 0deg) - 2deg));
+    }
+    50% {
+      transform: rotate(calc(var(--rot, 0deg) + 2deg));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sprig {
+      animation: none;
+    }
+  }
+</style>

@@ -1,8 +1,13 @@
 ---
 import { about, profile } from '../data/content';
+import Sprig from './Sprig.astro';
 ---
 
-<section id="about" class="section about">
+<section id="about" class="section about has-deco">
+  <div class="deco" aria-hidden="true">
+    <span class="blob" style="left: -9%; bottom: 4%; width: min(32vw, 380px); aspect-ratio: 1"></span>
+    <Sprig tone="coffee" leaves={6} bend={0.3} style="right: 5%; bottom: -2%; width: clamp(70px, 8vw, 120px); --rot: 14deg; --delay: -4s" class="hide-sm" />
+  </div>
   <div class="container">
     <div class="about-grid">
       <div class="about-head">

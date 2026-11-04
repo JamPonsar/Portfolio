@@ -166,3 +166,32 @@
   background: var(--ink);
   color: var(--surface);
 }
+
+/* Summary text with a plant drawing beside it. The drawing only shows on wide screens,
+   where the text leaves an empty column on the right of the panel. */
+.xp-art {
+  display: none;
+}
+
+@media (min-width: 1000px) {
+  .xp-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(190px, 24%, 270px);
+    column-gap: 3rem;
+    align-items: stretch;
+  }
+
+  .xp-art {
+    position: relative;
+    display: block;
+    min-height: 220px;
+  }
+
+  /* Fill whatever height the text takes, without making the row taller */
+  .xp-art .plant {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+}

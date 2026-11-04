@@ -1,0 +1,272 @@
+---
+// A larger botanical drawing, one per project / job, shown beside the summary in the
+// open panels (see .xp-intro in styles/panel.css). Each `kind` is a different plant so
+// no two panels share a drawing. Stems are Bezier curves with leaves placed along them.
+export type PlantKind =
+  | 'monstera'
+  | 'olive'
+  | 'ginkgo'
+  | 'fern'
+  | 'eucalyptus'
+  | 'succulent'
+  | 'sprig'
+  | 'fiddle';
+
+interface Props {
+  kind: PlantKind;
+  id?: string; // only needed if two of the same kind are on one page (used for the mask)
+}
+
+const { kind, id = kind } = Astro.props;
+
+const LEAVES = {
+  lance: { d: 'M0 0C8 -13 32 -15 48 0C32 15 8 13 0 0Z', vein: 'M3 0H40' },
+  round: { d: 'M0 0C0 -14 26 -20 34 0C26 20 0 14 0 0Z', vein: 'M3 0H29' },
+  narrow: { d: 'M0 0C10 -7 36 -8 54 0C36 8 10 7 0 0Z', vein: 'M4 0H46' },
+  leaflet: { d: 'M0 0C6 -5 20 -6 30 0C20 6 6 5 0 0Z', vein: 'M2 0H24' },
+  fiddle: { d: 'M0 0C-4 -22 30 -40 56 -20C64 -10 64 10 56 20C30 40 -4 22 0 0Z', vein: 'M3 0H54' },
+  fan: {
+    d: 'M0 0L46 -30C58 -36 70 -18 60 -3L56 0L60 3C70 18 58 36 46 30Z',
+    vein: 'M0 0L52 -22M0 0L56 -8M0 0L56 8M0 0L52 22',
+  },
+  succulent: { d: 'M0 0C6 -16 34 -18 48 0C34 18 6 16 0 0Z', vein: '' },
+} as const;
+
+type Bez = [[number, number], [number, number], [number, number], [number, number]];
+
+type Stem = {
+  P: Bez;
+  leaf: keyof typeof LEAVES;
+  count: number;
+  pairs?: boolean; // leaves in opposite pairs instead of alternating
+  t0: number;
+  t1: number;
+  spread: (t: number) => number; // angle off the stem
+  scale: (t: number) => number;
+  fills: [string, string];
+  stem: string;
+  stalk?: number; // short leaf stalk before the blade
+  berries?: string;
+};
+
+const stems: Partial<Record<PlantKind, Stem>> = {
+  sprig: {
+    P: [[120, 312], [84, 215], [160, 115], [130, 12]],
+    leaf: 'lance', count: 9, t0: 0.14, t1: 0.94,
+    spread: (t) => 54 - t * 16, scale: (t) => 1.4 - t * 0.78,
+    fills: ['#9a7050', '#b58d6b'], stem: '#7b573d',
+  },
+  eucalyptus: {
+    P: [[120, 312], [110, 220], [132, 120], [120, 20]],
+    leaf: 'round', count: 7, pairs: true, t0: 0.18, t1: 0.92,
+    spread: (t) => 64 - t * 22, scale: (t) => 1.7 - t * 0.95,
+    fills: ['#86a596', '#a9c4b5'], stem: '#5f7d6d',
+  },
+  olive: {
+    P: [[60, 312], [70, 200], [150, 150], [190, 30]],
+    leaf: 'narrow', count: 14, t0: 0.1, t1: 0.93,
+    spread: (t) => 40 - t * 10, scale: (t) => 1.25 - t * 0.6,
+    fills: ['#8d9a63', '#aab57f'], stem: '#6b7547',
+    berries: '#5b6040',
+  },
+  fern: {
+    P: [[70, 312], [60, 200], [110, 90], [190, 50]],
+    leaf: 'leaflet', count: 17, pairs: true, t0: 0.1, t1: 0.97,
+    spread: (t) => 66 - t * 12, scale: (t) => 1.45 - t * 1.15,
+    fills: ['#5f8052', '#7a9c68'], stem: '#4a6540',
+  },
+  fiddle: {
+    P: [[120, 312], [112, 230], [130, 140], [120, 30]],
+    leaf: 'fiddle', count: 5, t0: 0.24, t1: 0.9,
+    spread: (t) => 62 - t * 10, scale: (t) => 1.25 - t * 0.5,
+    fills: ['#6d8a52', '#86a368'], stem: '#4f6640',
+  },
+  ginkgo: {
+    P: [[100, 312], [90, 220], [150, 130], [130, 20]],
+    leaf: 'fan', count: 6, t0: 0.16, t1: 0.94, stalk: 16,
+    spread: (t) => 48 - t * 8, scale: (t) => 1.25 - t * 0.6,
+    fills: ['#d1b15f', '#e2c985'], stem: '#a8883f',
+  },
+};
+
+const n = (v: number) => v.toFixed(1);
+const at = (P: Bez, t: number) => {
+  const u = 1 - t;
+  const f = (i: 0 | 1) =>
+    u * u * u * P[0][i] + 3 * u * u * t * P[1][i] + 3 * u * t * t * P[2][i] + t * t * t * P[3][i];
+  return [f(0), f(1)] as const;
+};
+const heading = (P: Bez, t: number) => {
+  const u = 1 - t;
+  const d = (i: 0 | 1) =>
+    3 * u * u * (P[1][i] - P[0][i]) + 6 * u * t * (P[2][i] - P[1][i]) + 3 * t * t * (P[3][i] - P[2][i]);
+  return (Math.atan2(d(1), d(0)) * 180) / Math.PI;
+};
+
+const cfg = stems[kind];
+const placed: { transform: string; fill: string }[] = [];
+const berries: { x: number; y: number }[] = [];
+let tipTransform = '';
+
+if (cfg) {
+  const { P } = cfg;
+  const slots = cfg.pairs ? cfg.count : cfg.count;
+  for (let i = 0; i < slots; i++) {
+    const t = cfg.t0 + (i / Math.max(slots - 1, 1)) * (cfg.t1 - cfg.t0);
+    const [x, y] = at(P, t);
+    const h = heading(P, t);
+    const sides = cfg.pairs ? [-1, 1] : [i % 2 ? 1 : -1];
+    for (const side of sides) {
+      placed.push({
+        transform: `translate(${n(x)} ${n(y)}) rotate(${n(h + side * cfg.spread(t))}) scale(${n(cfg.scale(t))})`,
+        fill: cfg.fills[(i + (side > 0 ? 1 : 0)) % 2],
+      });
+    }
+  }
+  const [tx, ty] = at(P, 1);
+  tipTransform = `translate(${n(tx)} ${n(ty)}) rotate(${n(heading(P, 1))}) scale(${n(cfg.scale(1) * 0.9)})`;
+
+  if (cfg.berries) {
+    for (const t of [0.34, 0.52, 0.68]) {
+      const [x, y] = at(P, t);
+      const h = ((heading(P, t) + 90) * Math.PI) / 180;
+      berries.push({ x: x + Math.cos(h) * 16, y: y + Math.sin(h) * 16 });
+    }
+  }
+}
+
+// Succulent rosette: layers of fat petals fanned around a centre
+const rosette: { transform: string; fill: string }[] = [];
+if (kind === 'succulent') {
+  const layers = [
+    { count: 9, len: 80, fill: '#7fa38c' },
+    { count: 7, len: 62, fill: '#94b8a1' },
+    { count: 5, len: 44, fill: '#a9ccb5' },
+    { count: 3, len: 26, fill: '#bfdcc7' },
+  ];
+  layers.forEach((layer, li) => {
+    for (let i = 0; i < layer.count; i++) {
+      const angle = -168 + (i / (layer.count - 1)) * 156 + (li % 2 ? 6 : 0);
+      rosette.push({
+        transform: `translate(120 240) rotate(${n(angle)}) scale(${n(layer.len / 48)})`,
+        fill: layer.fill,
+      });
+    }
+  });
+}
+
+const L = cfg ? LEAVES[cfg.leaf] : LEAVES.lance;
+// Tight framing so every plant fills its box
+const viewBox = cfg ? '-20 -60 280 390' : kind === 'succulent' ? '30 160 180 160' : '-10 10 220 320';
+const stemPath = cfg ? `M${cfg.P[0].join(' ')}C${cfg.P[1].join(' ')} ${cfg.P[2].join(' ')} ${cfg.P[3].join(' ')}` : '';
+const stalk = cfg?.stalk ?? 0;
+---
+
+<svg class="plant" viewBox={viewBox} fill="none" aria-hidden="true" focusable="false">
+  {
+    cfg && (
+      <>
+        <path d={stemPath} stroke={cfg.stem} stroke-width="2.6" stroke-linecap="round" />
+        {placed.map((leaf) => (
+          <g transform={leaf.transform}>
+            {stalk > 0 && <path d={`M0 0H${stalk}`} stroke={cfg.stem} stroke-width="1.6" stroke-linecap="round" />}
+            <g transform={stalk ? `translate(${stalk} 0)` : undefined}>
+              <path d={L.d} fill={leaf.fill} fill-opacity="0.92" />
+              {L.vein && <path d={L.vein} stroke={cfg.stem} stroke-opacity="0.35" stroke-width="1.2" stroke-linecap="round" />}
+            </g>
+          </g>
+        ))}
+        <g transform={tipTransform}>
+          {stalk > 0 && <path d={`M0 0H${stalk}`} stroke={cfg.stem} stroke-width="1.6" stroke-linecap="round" />}
+          <g transform={stalk ? `translate(${stalk} 0)` : undefined}>
+            <path d={L.d} fill={cfg.fills[0]} fill-opacity="0.92" />
+            {L.vein && <path d={L.vein} stroke={cfg.stem} stroke-opacity="0.35" stroke-width="1.2" stroke-linecap="round" />}
+          </g>
+        </g>
+        {berries.map((b) => (
+          <ellipse cx={n(b.x)} cy={n(b.y)} rx="6" ry="8" fill={cfg.berries} fill-opacity="0.85" />
+        ))}
+      </>
+    )
+  }
+
+  {
+    kind === 'monstera' && (
+      <>
+        <defs>
+          <mask id={`${id}-holes`} maskUnits="userSpaceOnUse" x="-100" y="-160" width="200" height="200">
+            <rect x="-100" y="-160" width="200" height="200" fill="#fff" />
+            <g stroke="#000" stroke-width="7" stroke-linecap="round">
+              {[-26, -52, -78, -100].map((y) => (
+                <>
+                  <path d={`M-74 ${y + 14}L-26 ${y - 2}`} />
+                  <path d={`M74 ${y + 14}L26 ${y - 2}`} />
+                </>
+              ))}
+            </g>
+          </mask>
+        </defs>
+        <path d="M118 316C112 262 126 204 120 152" stroke="#4a6e44" stroke-width="3.4" stroke-linecap="round" />
+        <path d="M116 272C92 252 72 232 60 206" stroke="#4a6e44" stroke-width="2.6" stroke-linecap="round" />
+        <g transform="translate(60 206) rotate(-52) scale(0.5)">
+          <path
+            d="M0 0C-14 6 -58 -4 -62 -50C-64 -92 -26 -118 0 -128C26 -118 64 -92 62 -50C58 -4 14 6 0 0Z"
+            fill="#7ea36f"
+            fill-opacity="0.92"
+          />
+          <path d="M0 0V-120" stroke="#4a6e44" stroke-opacity="0.4" stroke-width="2" />
+        </g>
+        <g transform="translate(120 152) rotate(-7)">
+          <g mask={`url(#${id}-holes)`}>
+            <path
+              d="M0 0C-14 6 -58 -4 -62 -50C-64 -92 -26 -118 0 -128C26 -118 64 -92 62 -50C58 -4 14 6 0 0Z"
+              fill="#5d8a55"
+              fill-opacity="0.94"
+            />
+          </g>
+          <path d="M0 0V-122" stroke="#3f6339" stroke-opacity="0.45" stroke-width="2.2" stroke-linecap="round" />
+          <g stroke="#3f6339" stroke-opacity="0.3" stroke-width="1.3" stroke-linecap="round">
+            <path d="M0 -20L-44 -34M0 -46L-48 -62M0 -72L-40 -92M0 -96L-26 -112" />
+            <path d="M0 -20L44 -34M0 -46L48 -62M0 -72L40 -92M0 -96L26 -112" />
+          </g>
+        </g>
+      </>
+    )
+  }
+
+  {
+    kind === 'succulent' && (
+      <>
+        {rosette.map((petal) => (
+          <path d={LEAVES.succulent.d} transform={petal.transform} fill={petal.fill} fill-opacity="0.95" />
+        ))}
+        <path d="M84 262H156L148 308H92Z" fill="#b5652f" />
+        <rect x="78" y="248" width="84" height="16" rx="5" fill="#c77c47" />
+        <path d="M84 262H156" stroke="#8f4d22" stroke-opacity="0.35" stroke-width="2" />
+      </>
+    )
+  }
+</svg>
+
+<style>
+  .plant {
+    transform-origin: 50% 100%;
+    animation: plant-sway 11s ease-in-out infinite;
+  }
+
+  @keyframes plant-sway {
+    0%,
+    100% {
+      transform: rotate(-1.4deg);
+    }
+    50% {
+      transform: rotate(1.4deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .plant {
+      animation: none;
+    }
+  }
+</style>

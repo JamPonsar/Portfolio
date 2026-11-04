@@ -7,9 +7,16 @@ const socials = [
   { label: 'GitHub', href: profile.github },
   { label: 'Email', href: `mailto:${profile.email}` },
 ];
+import Sprig from './Sprig.astro';
 ---
 
-<section id="contact" class="contact">
+<section id="contact" class="contact has-deco">
+  <div class="deco" aria-hidden="true">
+    <span class="blob" style="left: 50%; top: 10%; width: min(46vw, 560px); aspect-ratio: 1; translate: -50% 0; --blob: rgba(143, 165, 115, 0.1)"></span>
+    <Sprig tone="sage" leaves={11} bend={0.3} style="left: 2%; bottom: 8%; width: clamp(64px, 13vw, 200px); --rot: 10deg; --dur: 10s" />
+    <Sprig tone="moss" leaves={11} bend={-0.3} flip style="right: 2%; bottom: 8%; width: clamp(64px, 13vw, 200px); --rot: -10deg; --dur: 12s; --delay: -4s" />
+    <Sprig tone="coffee" leaves={7} bend={0.4} style="left: 12%; bottom: 17%; width: clamp(60px, 7vw, 110px); --rot: -8deg; --delay: -2s" class="hide-sm" />
+  </div>
   <div class="container">
     <div class="contact-inner section">
       <span class="eyebrow" data-reveal>Contact</span>
@@ -20,16 +27,31 @@ const socials = [
         Whether it’s a role, a freelance project, or just a conversation about AI and the web — my inbox is open.
       </p>
 
-      <a href={`mailto:${profile.email}`} class="email" data-reveal style="--delay: 300ms">
+      <a href={`mailto:${profile.email}`} class="email" data-copy-email={profile.email} data-reveal style="--delay: 300ms" title="Copy my email address">
         <span>{profile.email}</span>
-        <span class="arrow" aria-hidden="true">↗</span>
+        <span class="arrow" aria-hidden="true">
+          <svg class="icon-copy" width="0.8em" height="0.8em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="11" height="11" rx="2.5"></rect>
+            <path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"></path>
+          </svg>
+          <svg class="icon-check" width="0.8em" height="0.8em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12.5l4.5 4.5L19 7.5"></path>
+          </svg>
+        </span>
+        <span class="copied" role="status" aria-live="polite"></span>
       </a>
 
       <ul class="socials" data-reveal style="--delay: 400ms">
         {
           socials.map((s) => (
             <li>
-              <a href={s.href} target={s.href.startsWith('http') ? '_blank' : undefined} rel="noopener">
+              <a
+                href={s.href}
+                target={s.href.startsWith('http') ? '_blank' : undefined}
+                rel="noopener"
+                data-copy-email={s.label === 'Email' ? profile.email : undefined}
+                data-label={s.label}
+              >
                 {s.label}
               </a>
             </li>
@@ -44,6 +66,53 @@ const socials = [
     </footer>
   </div>
 </section>
+
+<script>
+  // Many people don't have a mail app set up, so a mailto: link can do nothing at all.
+  // Clicking an email link copies the address instead and says so; if copying isn't
+  // possible the normal mailto: link still runs.
+  async function copy(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      const box = Object.assign(document.createElement('textarea'), { value: text });
+      box.style.cssText = 'position:fixed;opacity:0';
+      document.body.append(box);
+      box.select();
+      const ok = document.execCommand('copy');
+      box.remove();
+      return ok;
+    }
+  }
+
+  document.querySelectorAll<HTMLAnchorElement>('[data-copy-email]').forEach((link) => {
+    const label = link.dataset.label ? link : null; // the pill's text is its label
+    const toast = link.querySelector<HTMLElement>('.copied');
+    let timer: number;
+
+    link.addEventListener('click', async (e) => {
+      // Let modified clicks (new tab, etc.) behave normally
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      e.preventDefault();
+
+      if (!(await copy(link.dataset.copyEmail!))) {
+        window.location.href = link.href;
+        return;
+      }
+
+      link.classList.add('is-copied');
+      if (toast) toast.textContent = 'Email address copied';
+      if (label) label.textContent = 'Copied ✓';
+      clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        link.classList.remove('is-copied');
+        if (toast) toast.textContent = '';
+        if (label) label.textContent = link.dataset.label!;
+      }, 2200);
+    });
+  });
+</script>
 
 <style>
   .contact {
@@ -111,8 +180,48 @@ const socials = [
     transition: transform 0.5s var(--ease);
   }
 
+  .email .arrow {
+    display: inline-grid;
+    place-items: center;
+  }
+
+  .email .arrow svg {
+    grid-area: 1 / 1;
+    transition:
+      opacity 0.3s ease,
+      transform 0.5s var(--ease);
+  }
+
+  .email .icon-check {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  .email.is-copied .icon-copy {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  .email.is-copied .icon-check {
+    opacity: 1;
+    transform: none;
+  }
+
   .email:hover .arrow {
-    transform: translate(4px, -4px);
+    transform: translateY(-2px);
+  }
+
+  .copied {
+    position: absolute;
+    top: calc(100% + 0.6rem);
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--accent);
+    white-space: nowrap;
   }
 
   .socials {
@@ -120,7 +229,7 @@ const socials = [
     flex-wrap: wrap;
     justify-content: center;
     gap: 0.75rem;
-    margin: 2.5rem 0 0;
+    margin: 3.25rem 0 0;
     padding: 0;
     list-style: none;
   }

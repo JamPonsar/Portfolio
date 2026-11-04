@@ -203,3 +203,50 @@ section {
     transform: none;
   }
 }
+
+/* Decorative leaves and soft shapes (see components/Sprig.astro).
+   A .deco layer sits behind a section's content and never takes clicks. */
+.has-deco {
+  position: relative;
+}
+
+.has-deco > .container {
+  position: relative;
+}
+
+.deco {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
+  background: var(--blob, rgba(150, 100, 62, 0.1));
+  animation: morph 22s ease-in-out infinite;
+}
+
+@keyframes morph {
+  0%,
+  100% {
+    border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
+  }
+  50% {
+    border-radius: 40% 60% 42% 58% / 47% 56% 44% 53%;
+  }
+}
+
+@media (max-width: 760px) {
+  .deco .hide-sm {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blob {
+    animation: none;
+  }
+}
